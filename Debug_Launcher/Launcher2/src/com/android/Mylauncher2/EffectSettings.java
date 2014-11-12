@@ -19,8 +19,6 @@ public class EffectSettings extends PreferenceActivity
             implements OnSharedPreferenceChangeListener{
 
     public static final String KEY_PREF_WORKSPACE_EFFECT = "workspace_effect";
-    public static final String KEY_PREF_ALLAPPS_EFFECT = "allapps_effect";
-    public static final String KEY_PREF_SWITCH_EFFECT = "switch_effect";
     
 
     /* Workspace effects values --- workspace_effect_values */
@@ -31,19 +29,6 @@ public class EffectSettings extends PreferenceActivity
     public static final String WORKSPACE_EFFECT_WINDMILLS = "Windmills";
     public static final String WORKSPACE_EFFECT_EXTRUSION = "Extrusion";
     
-    /* Allapps effects values --- allapps_effect_values */
-    public static final String ALLAPPS_EFFECT_DEFAULT = "Default";
-    public static final String ALLAPPS_EFFECT_CUBE = "Cube";
-    public static final String ALLAPPS_EFFECT_FLIP = "Flip";
-    public static final String ALLAPPS_EFFECT_CIRCLE = "Circle";
-    
-    /* Switch Effects values --- switch_effect_values */
-    public static final String SWITCH_EFFECT_DEFAULT = "Default";
-    public static final String SWITCH_EFFECT_FLIP = "Flip";
-    public static final String SWITCH_EFFECT_ROTATE_AND_SCALE = "Rotate_Scale";
-    public static final String SWITCH_EFFECT_TELEVISION = "Television";
-    public static final String SWITCH_EFFECT_TELEVISION_AND_FLIP = "Television_Flip";
-
 	// added by robson
 	String mNewestWorkspaceEffect;
     
@@ -59,8 +44,6 @@ public class EffectSettings extends PreferenceActivity
         /* display summary */
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         updateSummary(this, sp, KEY_PREF_WORKSPACE_EFFECT);
-        updateSummary(this, sp, KEY_PREF_ALLAPPS_EFFECT);
-        updateSummary(this, sp, KEY_PREF_SWITCH_EFFECT);
 		// added by robson begin
 		Intent intent = getIntent();
 		mNewestWorkspaceEffect = intent.getStringExtra(KEY_PREF_WORKSPACE_EFFECT);

@@ -274,6 +274,7 @@ s -->
     <!-- Dummy string [CHAR_LIMIT=60] -->
     <string name="custom_workspace_cling_description_2"></string>
     
+    <string name="menu_effect_settings">Effect settings</string>
     <string name="workspace_effect">Workspace effect</string>
 
 </resources>

@@ -1244,6 +1244,7 @@ s
         /**  Verb, menu item used to add an item on the desktop 
          */
         public static final int menu_add=0x7f0d002d;
+        public static final int menu_effect_settings=0x7f0d0060;
         /**  Noun, menu item used to show help. [CHAR_LIMIT=none] 
          */
         public static final int menu_help=0x7f0d0033;
@@ -1347,7 +1348,7 @@ s
         /**  The format string for Workspace descriptions [CHAR_LIMIT=none] 
          */
         public static final int workspace_description_format=0x7f0d0047;
-        public static final int workspace_effect=0x7f0d0060;
+        public static final int workspace_effect=0x7f0d0061;
         /**  The format string for Workspace page scroll text [CHAR_LIMIT=none] 
          */
         public static final int workspace_scroll_format=0x7f0d0049;

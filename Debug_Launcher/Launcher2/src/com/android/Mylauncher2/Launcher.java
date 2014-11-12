@@ -127,7 +127,9 @@ public final class Launcher extends Activity
     static final boolean DEBUG_STRICT_MODE = false;
 
     private static final int MENU_GROUP_WALLPAPER = 1;
+    private static final int MENU_GROUP_EFFECT = 2; //mcoy add
     private static final int MENU_WALLPAPER_SETTINGS = Menu.FIRST + 1;
+    private static final int MENU_EFFECT_SETTINGS = MENU_WALLPAPER_SETTINGS + 1; //added by mcoy
     private static final int MENU_MANAGE_APPS = MENU_WALLPAPER_SETTINGS + 1;
     private static final int MENU_SYSTEM_SETTINGS = MENU_MANAGE_APPS + 1;
     private static final int MENU_HELP = MENU_SYSTEM_SETTINGS + 1;
@@ -1627,6 +1629,16 @@ public final class Launcher extends Activity
             .setIcon(android.R.drawable.ic_menu_manage)
             .setIntent(manageApps)
             .setAlphabeticShortcut('M');
+                /* Added by Joseth Start */
+        Intent effectSettings = new Intent();
+        effectSettings.setClass(getApplicationContext(), EffectSettings.class);
+        effectSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                effectSettings.putExtra(EffectSettings.KEY_PREF_WORKSPACE_EFFECT,mModel.getWorkspaceEffect()); // added by robson
+        menu.add(0, MENU_EFFECT_SETTINGS, 0, R.string.menu_effect_settings)
+            .setIcon(android.R.drawable.ic_menu_preferences)
+            .setIntent(effectSettings)
+            .setAlphabeticShortcut('E');
+                /* Added by Joseth End */
         menu.add(0, MENU_SYSTEM_SETTINGS, 0, R.string.menu_settings)
             .setIcon(android.R.drawable.ic_menu_preferences)
             .setIntent(settings)
@@ -2484,11 +2496,11 @@ public final class Launcher extends Activity
 
         // Shrink workspaces away if going to AppsCustomize from workspace
         Animator workspaceAnim =
-                mWorkspace.getChangeStateAnimation(Workspace.State.SMALL, animated);
+               mWorkspace.getChangeStateAnimation(Workspace.State.SMALL, animated);
 
         if (animated) {
-            //toView.setScaleX(scale);  //mcoy hide
-            //toView.setScaleY(scale);  //mcoy hide
+            toView.setScaleX(scale);  //mcoy hide
+            toView.setScaleY(scale);  //mcoy hide
             final LauncherViewPropertyAnimator scaleAnim = new LauncherViewPropertyAnimator(toView);
             scaleAnim.
                 scaleX(1f).scaleY(1f).
@@ -2517,9 +2529,9 @@ public final class Launcher extends Activity
             // animation
             mStateAnimation = LauncherAnimUtils.createAnimatorSet();
             //mcoy modify and add begin
-            ObjectAnimator translateAnim = ObjectAnimator.ofFloat(toView, "y", toView.getHeight(), 0);
-            //mStateAnimation.play(scaleAnim).after(startDelay);
-            mStateAnimation.play(translateAnim).after(startDelay);
+            //ObjectAnimator translateAnim = ObjectAnimator.ofFloat(toView, "y", toView.getHeight(), 0);
+            mStateAnimation.play(scaleAnim).after(startDelay);
+            //mStateAnimation.play(translateAnim).after(startDelay);
             //mcoy modify and add end
             mStateAnimation.play(alphaAnim).after(startDelay);
 
@@ -2722,7 +2734,7 @@ public final class Launcher extends Activity
                 }
             });
 
-            //mStateAnimation.playTogether(scaleAnim, alphaAnim);   //mcoy hide
+            mStateAnimation.playTogether(scaleAnim, alphaAnim);   //mcoy hide
             if (workspaceAnim != null) {
                 mStateAnimation.play(workspaceAnim);
             }

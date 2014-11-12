@@ -99,6 +99,14 @@
                 android:resource="@xml/wallpaper_picker_preview" />
         </activity>
 
+        <!-- Added by Joseth -->
+        <activity android:name="com.android.Mylauncher2.EffectSettings" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        
         <!-- Intent received used to prepopulate the default workspace. -->
         <receiver
             android:name="com.android.Mylauncher2.PreloadReceiver"
