@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="workspace_effect_entries">
+        <item>Default</item>
+        <item>Cube</item>
+        <item>Flip</item>
+        <item>Wave</item>
+        <item>Windmills</item>
+        <item>Extrusion</item>
+    </string-array>
+    <string-array name="workspace_effect_values">
+        <item>Default</item>
+        <item>Cube</item>
+        <item>Flip</item>
+        <item>Wave</item>
+        <item>Windmills</item>
+        <item>Extrusion</item>
+    </string-array>
+
+</resources>

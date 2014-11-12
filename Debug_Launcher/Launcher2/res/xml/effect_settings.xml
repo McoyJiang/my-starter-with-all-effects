@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+        <ListPreference
+            android:key="workspace_effect" 
+            android:title="@string/workspace_effect"
+            android:dialogTitle="@string/workspace_effect"
+            android:entries="@array/workspace_effect_entries"
+            android:entryValues="@array/workspace_effect_values"
+            android:defaultValue="Default"
+            />
+</PreferenceScreen>
