@@ -44,19 +44,6 @@ public class EffectSettings extends PreferenceActivity
         /* display summary */
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         updateSummary(this, sp, KEY_PREF_WORKSPACE_EFFECT);
-		// added by robson begin
-		Intent intent = getIntent();
-		mNewestWorkspaceEffect = intent.getStringExtra(KEY_PREF_WORKSPACE_EFFECT);
-		Log.d("robson", "EffectSettings" + " -> onCreate(), mNewestWorkspaceEffect = " + mNewestWorkspaceEffect);
-		if (mNewestWorkspaceEffect != null) {
-			ListPreference pref = (ListPreference) findPreference(KEY_PREF_WORKSPACE_EFFECT);
-			pref.setSummary(mNewestWorkspaceEffect);
-			pref.setValue(mNewestWorkspaceEffect);
-			SharedPreferences.Editor edit = sp.edit();
-            edit.putString(KEY_PREF_WORKSPACE_EFFECT, mNewestWorkspaceEffect);
-            edit.commit();
-        }
-		// added by robson end
     }
 
     @Override
@@ -79,6 +66,7 @@ public class EffectSettings extends PreferenceActivity
 		
 		final Intent intent = new Intent(LauncherModel.EFFECT_CHANGED_ACTION);
 		sendBroadcast(intent);
+		finish();
     }
     
     private void updateSummary(Context ctx, SharedPreferences sp, String key) {
@@ -87,6 +75,7 @@ public class EffectSettings extends PreferenceActivity
         String defaultValue = null;
         Preference pref = findPreference(key);
         String value = sp.getString(key, "");
+        Log.e("JIANG", "EffectSettings---updateSummary--key is " + key + " value is " + value);
         int idx;
         
         if (key.equals(KEY_PREF_WORKSPACE_EFFECT)) {

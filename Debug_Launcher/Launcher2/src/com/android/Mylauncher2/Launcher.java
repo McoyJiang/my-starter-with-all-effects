@@ -361,6 +361,7 @@ public final class Launcher extends Activity
         mSharedPrefs = getSharedPreferences(LauncherApplication.getSharedPreferencesKey(),
                 Context.MODE_PRIVATE);
         mModel = app.setLauncher(this);
+        mModel.loadEffectSettings(this); //Added by Joseth
         mIconCache = app.getIconCache();
         mDragController = new DragController(this);
         mInflater = getLayoutInflater();
@@ -1381,7 +1382,7 @@ public final class Launcher extends Activity
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-
+        Log.e(TAG, "onNewIntent()");
         // Close the menu
         if (Intent.ACTION_MAIN.equals(intent.getAction())) {
             // also will cancel mWaitingForResult.
@@ -1625,15 +1626,17 @@ public final class Launcher extends Activity
         menu.add(MENU_GROUP_WALLPAPER, MENU_WALLPAPER_SETTINGS, 0, R.string.menu_wallpaper)
             .setIcon(android.R.drawable.ic_menu_gallery)
             .setAlphabeticShortcut('W');
-        menu.add(0, MENU_MANAGE_APPS, 0, R.string.menu_manage_apps)
+        menu.add(MENU_GROUP_EFFECT, MENU_MANAGE_APPS, 0, R.string.menu_manage_apps)
             .setIcon(android.R.drawable.ic_menu_manage)
             .setIntent(manageApps)
             .setAlphabeticShortcut('M');
                 /* Added by Joseth Start */
         Intent effectSettings = new Intent();
         effectSettings.setClass(getApplicationContext(), EffectSettings.class);
-        effectSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                effectSettings.putExtra(EffectSettings.KEY_PREF_WORKSPACE_EFFECT,mModel.getWorkspaceEffect()); // added by robson
+        effectSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+        		| Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        String currentEffect = mModel.getWorkspaceEffect();
+        effectSettings.putExtra(EffectSettings.KEY_PREF_WORKSPACE_EFFECT, currentEffect); // added by robson
         menu.add(0, MENU_EFFECT_SETTINGS, 0, R.string.menu_effect_settings)
             .setIcon(android.R.drawable.ic_menu_preferences)
             .setIntent(effectSettings)
@@ -2790,7 +2793,9 @@ public final class Launcher extends Activity
     }
 
     void showWorkspace(boolean animated, Runnable onCompleteRunnable) {
+    	Log.e(TAG, "showWorkspace---animated is " + animated);
         if (mState != State.WORKSPACE) {
+        	Log.e(TAG, "mState != State.WORKSPACE");
             boolean wasInSpringLoadedMode = (mState == State.APPS_CUSTOMIZE_SPRING_LOADED);
             mWorkspace.setVisibility(View.VISIBLE);
             hideAppsCustomizeHelper(State.WORKSPACE, animated, false, onCompleteRunnable);
@@ -2808,6 +2813,8 @@ public final class Launcher extends Activity
             if (mAllAppsButton != null) {
                 mAllAppsButton.requestFocus();
             }
+        }else {
+        	Log.e(TAG, "mState == State.WORKSPACE");
         }
 
         mWorkspace.flashScrollingIndicator(animated);

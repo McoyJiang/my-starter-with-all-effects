@@ -833,11 +833,13 @@ public class LauncherModel extends BroadcastReceiver {
 	private String mWorkspaceEffect = EffectSettings.WORKSPACE_EFFECT_DEFAULT;
 
 	public void loadEffectSettings(Context ctx) {
+		Log.e("JIANG", "LauncherModel---loadEffectSettings--mWorkspaceEffect before is " + mWorkspaceEffect);
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
 		String oldWorkspaceEffect = mWorkspaceEffect;
 
         mWorkspaceEffect = sp.getString(EffectSettings.KEY_PREF_WORKSPACE_EFFECT, 
 							EffectSettings.WORKSPACE_EFFECT_DEFAULT);
+		Log.e("JIANG", "LauncherModel---loadEffectSettings--mWorkspaceEffect after is " + mWorkspaceEffect);
 
         Callbacks callbacks = mCallbacks.get();
 		if (!oldWorkspaceEffect.equals(mWorkspaceEffect) && callbacks != null) {
