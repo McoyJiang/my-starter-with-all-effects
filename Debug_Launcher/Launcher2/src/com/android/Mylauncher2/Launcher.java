@@ -2561,7 +2561,8 @@ public final class Launcher extends Activity
                         hideDockDivider();
                     }
                     if (!animationCancelled) {
-                        updateWallpaperVisibility(false);
+		        //mcoy comment for showing wallpaper in apps view
+                        //updateWallpaperVisibility(false);
                     }
 
                     // Hide the search bar

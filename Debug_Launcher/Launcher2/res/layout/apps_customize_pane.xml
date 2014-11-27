@@ -16,7 +16,7 @@
 <com.android.Mylauncher2.AppsCustomizeTabHost
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:launcher="http://schemas.android.com/apk/res/com.android.Mylauncher"
-    android:background="#FF000000">
+    android:background="#a0000000">
     <LinearLayout
         android:id="@+id/apps_customize_content"
         android:orientation="vertical"
