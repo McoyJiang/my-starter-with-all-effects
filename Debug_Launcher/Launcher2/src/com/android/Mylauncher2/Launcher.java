@@ -199,6 +199,7 @@ public final class Launcher extends Activity
 
     private static final Object sLock = new Object();
     private static int sScreen = DEFAULT_SCREEN;
+    private boolean backFromEffect = false;  //mcoy add to avoid icon size change when back from effectsettigns
 
     // How long to wait before the new-shortcut animation automatically pans the workspace
     private static int NEW_APPS_ANIMATION_INACTIVE_TIMEOUT_SECONDS = 10;
@@ -1397,13 +1398,14 @@ public final class Launcher extends Activity
                     Folder openFolder = mWorkspace.getOpenFolder();
                     // In all these cases, only animate if we're already on home
                     mWorkspace.exitWidgetResizeMode();
-                    if (alreadyOnHome && mState == State.WORKSPACE && !mWorkspace.isTouchActive() &&
-                            openFolder == null) {
+					if (alreadyOnHome && mState == State.WORKSPACE && !mWorkspace.isTouchActive() &&
+                            openFolder == null && !backFromEffect) {
                         mWorkspace.moveToDefaultScreen(true);
                     }
 
                     closeFolder();
                     exitSpringLoadedDragMode();
+		    backFromEffect = false;
 
                     // If we are already on home, then just animate back to the workspace,
                     // otherwise, just wait until onResume to set the state back to Workspace
@@ -1639,7 +1641,6 @@ public final class Launcher extends Activity
         effectSettings.putExtra(EffectSettings.KEY_PREF_WORKSPACE_EFFECT, currentEffect); // added by robson
         menu.add(0, MENU_EFFECT_SETTINGS, 0, R.string.menu_effect_settings)
             .setIcon(android.R.drawable.ic_menu_preferences)
-            .setIntent(effectSettings)
             .setAlphabeticShortcut('E');
                 /* Added by Joseth End */
         menu.add(0, MENU_SYSTEM_SETTINGS, 0, R.string.menu_settings)
@@ -1674,6 +1675,9 @@ public final class Launcher extends Activity
         case MENU_WALLPAPER_SETTINGS:
             startWallpaper();
             return true;
+        case MENU_EFFECT_SETTINGS:
+        	startEffectSettings();
+        	return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -1863,6 +1867,17 @@ public final class Launcher extends Activity
 //            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { li });
 //        }
         startActivityForResult(chooser, REQUEST_PICK_WALLPAPER);
+    }
+    
+    private void startEffectSettings() {
+    	Log.e(TAG, "startEffectSettings()");
+    	showWorkspace(true);
+	    backFromEffect = true;
+    	final Intent effectSettings = new Intent();
+    	effectSettings.setClass(getApplicationContext(), EffectSettings.class);
+        String currentEffect = mModel.getWorkspaceEffect();
+        effectSettings.putExtra(EffectSettings.KEY_PREF_WORKSPACE_EFFECT, currentEffect); // added by mcoy
+        startActivityForResult(effectSettings, REQUEST_PICK_WALLPAPER);
     }
 
     /**
