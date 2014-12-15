@@ -17,5 +17,16 @@
         <item>Windmills</item>
         <item>Extrusion</item>
     </string-array>
+    
+    <!-- mcoy add for apps sort order settings begin -->
+    <string-array name="entry_apps_sort">
+        <item>Apps shortcut name</item>
+        <item>Apps installed time</item>
+    </string-array>
+    <string-array name="entryvalues_apps_sort">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <!-- mcoy add end -->
 
 </resources>

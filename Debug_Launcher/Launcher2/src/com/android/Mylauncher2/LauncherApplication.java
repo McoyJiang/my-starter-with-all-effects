@@ -69,11 +69,17 @@ public class LauncherApplication extends Application {
         filter.addAction(SearchManager.INTENT_ACTION_SEARCHABLES_CHANGED);
         registerReceiver(mModel, filter);
         
-        //Added by Joseth START 
+        //Added by mcoy for workspace effct START 
         filter = new IntentFilter();
         filter.addAction(LauncherModel.EFFECT_CHANGED_ACTION);
         registerReceiver(mModel, filter);
-        //Added by Joseth END
+        //Added by mcoy END
+        
+        //mcoy add for apps sort settings begin
+        filter = new IntentFilter();
+        filter.addAction(LauncherModel.APPS_SORT_BY_ACTION);
+        registerReceiver(mModel, filter);
+        //mcoy add
 
         // Register for changes to the favorites
         ContentResolver resolver = getContentResolver();

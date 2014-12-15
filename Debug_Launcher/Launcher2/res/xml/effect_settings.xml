@@ -8,4 +8,13 @@
             android:entryValues="@array/workspace_effect_values"
             android:defaultValue="Default"
             />
+        
+        <ListPreference 
+            android:key="apps_sort" 
+            android:title="@string/apps_sort_settings_title"
+            android:dialogTitle="@string/apps_sort_settings_title"
+            android:persistent="true"
+            android:entries="@array/entry_apps_sort"
+            android:entryValues="@array/entryvalues_apps_sort"
+            android:defaultValue="0"/>
 </PreferenceScreen>

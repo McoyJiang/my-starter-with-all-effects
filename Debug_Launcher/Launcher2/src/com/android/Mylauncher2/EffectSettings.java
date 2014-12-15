@@ -14,11 +14,15 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.preference.ListPreference; // Added by robson
+import android.preference.Preference.OnPreferenceChangeListener;
 
 public class EffectSettings extends PreferenceActivity
-            implements OnSharedPreferenceChangeListener{
+            implements OnSharedPreferenceChangeListener, OnPreferenceChangeListener{
 
     public static final String KEY_PREF_WORKSPACE_EFFECT = "workspace_effect";
+    //mcoy add for apps sort settings begin
+    public static final String KEY_APPS_SORT = "apps_sort";
+    //mcoy add end
     
 
     /* Workspace effects values --- workspace_effect_values */
@@ -31,6 +35,10 @@ public class EffectSettings extends PreferenceActivity
     
 	// added by robson
 	String mNewestWorkspaceEffect;
+	
+	//mcoy add for apps sort settings begin
+	private ListPreference mComparatorChangePreference;
+	//mcoy add end
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +46,14 @@ public class EffectSettings extends PreferenceActivity
         super.onCreate(savedInstanceState);
         
         addPreferencesFromResource(R.xml.effect_settings);
+        
+        //mcoy add for apps sort settings begin
+        mComparatorChangePreference = (ListPreference) findPreference(KEY_APPS_SORT);
+        String str = getAppSortSettignsValue(getApplicationContext());
+        Log.e("JIANG", "the str is " + str);
+        mComparatorChangePreference.setValue(str);
+        mComparatorChangePreference.setOnPreferenceChangeListener(this);
+        //mcoy add end
         
         /* Set Default */
         PreferenceManager.setDefaultValues(this, R.xml.effect_settings, false);
@@ -62,12 +78,31 @@ public class EffectSettings extends PreferenceActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        updateSummary(this, sharedPreferences, key);
-		
-		final Intent intent = new Intent(LauncherModel.EFFECT_CHANGED_ACTION);
-		sendBroadcast(intent);
-		finish();
+		if (KEY_PREF_WORKSPACE_EFFECT.equals(key)) {
+			updateSummary(this, sharedPreferences, key);
+
+			final Intent intent = new Intent(
+					LauncherModel.EFFECT_CHANGED_ACTION);
+			sendBroadcast(intent);
+			finish();
+		}
     }
+    
+    //mcoy add for apps sort settings begin
+	@Override
+	public boolean onPreferenceChange(Preference preference, Object value) {
+		Log.e("JIANG", "onPreferenceChange---value is " + (String)value);
+		final String key = preference.getKey();
+		if(KEY_APPS_SORT.equals(key)) {
+			final Intent intent = new Intent(
+					LauncherModel.APPS_SORT_BY_ACTION);
+			intent.putExtra(LauncherModel.APPS_SORT_BY_COMPARATOR_ID, Integer.parseInt((String)value));
+			sendBroadcast(intent);
+			finish();
+		}
+		return false;
+	}
+    //mcoy add end
     
     private void updateSummary(Context ctx, SharedPreferences sp, String key) {
         String []effects = null;
@@ -109,11 +144,19 @@ public class EffectSettings extends PreferenceActivity
     public static  String getWorkspaeEffect(Context ctx) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         String effect = sp.getString(KEY_PREF_WORKSPACE_EFFECT, WORKSPACE_EFFECT_DEFAULT);
-
         return effect;
     }
+    
+    //mcoy add for apps sort settings begin
+    public String getAppSortSettignsValue(Context ctx) {
+    	SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        String effect = sp.getString(KEY_APPS_SORT, "0");
+        return effect;
+    }
+    //mcoy add end
 
 	public PreferenceManager getEffectPreferenceManager() {
 		return getPreferenceManager();
 	}
+
 }

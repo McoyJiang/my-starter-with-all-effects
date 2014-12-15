@@ -276,5 +276,9 @@ s -->
     
     <string name="menu_effect_settings">Effect settings</string>
     <string name="workspace_effect">Workspace effect</string>
+    
+    <!-- mcoy add for apps sort order settings begin -->
+    <string name="apps_sort_settings_title">Apps sorted by</string>
+    <!-- mcoy add end -->
 
 </resources>

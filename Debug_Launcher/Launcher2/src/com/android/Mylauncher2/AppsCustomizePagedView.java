@@ -1765,7 +1765,8 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
 
     public void setApps(ArrayList<ApplicationInfo> list) {
         mApps = list;
-        Collections.sort(mApps, LauncherModel.getAppNameComparator());
+        //Collections.sort(mApps, LauncherModel.getAppNameComparator());
+        Collections.sort(mApps, LauncherModel.getSwitchedCompararot());
         updatePageCounts();
         invalidateOnDataChange();
     }
@@ -1774,7 +1775,8 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         int count = list.size();
         for (int i = 0; i < count; ++i) {
             ApplicationInfo info = list.get(i);
-            int index = Collections.binarySearch(mApps, info, LauncherModel.getAppNameComparator());
+            //int index = Collections.binarySearch(mApps, info, LauncherModel.getAppNameComparator());
+            int index = Collections.binarySearch(mApps, info, LauncherModel.getSwitchedCompararot());
             if (index < 0) {
                 mApps.add(-(index + 1), info);
             }

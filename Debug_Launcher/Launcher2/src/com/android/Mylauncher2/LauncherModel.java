@@ -91,6 +91,13 @@ public class LauncherModel extends BroadcastReceiver {
     
     //Added by Joseth
     final static String EFFECT_CHANGED_ACTION = "com.dewav.intent.effect_changed";
+    //mcoy add for apps sort settings begin
+    private static int mCurrentComparatorId = 0;  //this is the most important the specify which comparator th use
+    private final static int APP_SHORTCUT_NAME_COMPARATOR = 0;
+    private final static int INSTALL_TIME_COMPARATOR = 1;
+    final static String APPS_SORT_BY_ACTION = "com.dewav.intent.apps_sort_settings";
+    final static String APPS_SORT_BY_COMPARATOR_ID = "apps_sort_id";
+    //mcoy add end
 
 
     private static final HandlerThread sWorkerThread = new HandlerThread("launcher-loader");
@@ -827,6 +834,17 @@ public class LauncherModel extends BroadcastReceiver {
 		} else if (EFFECT_CHANGED_ACTION.equals(action)) {
 			loadEffectSettings(context);
 		}
+        //mcoy add for apps sort settings begin
+		else if (APPS_SORT_BY_ACTION.equals(action)) {
+			Log.e("JIANG", "the comparator has changed!!!");
+			int curr = intent.getIntExtra(
+					LauncherModel.APPS_SORT_BY_COMPARATOR_ID,
+					APP_SHORTCUT_NAME_COMPARATOR);
+            Log.e("JIANG", "the curr is " + curr);
+            mCurrentComparatorId = curr;
+			forceReload();
+		}
+        //mcoy add end
     }
 
 	// Added by Joseth START
@@ -1910,8 +1928,13 @@ public class LauncherModel extends BroadcastReceiver {
                     }
 
                     final long sortTime = DEBUG_LOADERS ? SystemClock.uptimeMillis() : 0;
-                    Collections.sort(apps,
-                            new LauncherModel.ShortcutNameComparator(packageManager, mLabelCache));
+					if (mCurrentComparatorId == APP_SHORTCUT_NAME_COMPARATOR) {
+						Collections.sort(apps,
+								new LauncherModel.ShortcutNameComparator(
+										packageManager, mLabelCache));
+					} else {
+						Collections.sort(apps, new LauncherModel.InstallTimeComparator(packageManager, apps));
+					}
                     if (DEBUG_LOADERS) {
                         Log.d(TAG, "sort took "
                                 + (SystemClock.uptimeMillis()-sortTime) + "ms");
@@ -2495,8 +2518,8 @@ public class LauncherModel extends BroadcastReceiver {
     public static final Comparator<ApplicationInfo> APP_INSTALL_TIME_COMPARATOR
             = new Comparator<ApplicationInfo>() {
         public final int compare(ApplicationInfo a, ApplicationInfo b) {
-            if (a.firstInstallTime < b.firstInstallTime) return 1;
-            if (a.firstInstallTime > b.firstInstallTime) return -1;
+            if (a.firstInstallTime > b.firstInstallTime) return 1;
+            if (a.firstInstallTime < b.firstInstallTime) return -1;
             return 0;
         }
     };
@@ -2550,6 +2573,52 @@ public class LauncherModel extends BroadcastReceiver {
             return mCollator.compare(labelA, labelB);
         }
     };
+    
+    //mcoy add for apps sort settings begin
+    public static final Comparator<ApplicationInfo> getSwitchedCompararot() {
+        if(mCurrentComparatorId == INSTALL_TIME_COMPARATOR){
+            return getInstallTimeComparator();
+        } else {
+            return getAppNameComparator();
+        }
+    }
+
+    public static final Comparator<ApplicationInfo> getInstallTimeComparator() {
+        return new Comparator<ApplicationInfo>() {
+            public final int compare(ApplicationInfo a, ApplicationInfo b) {
+                return a.firstInstallTime == b.firstInstallTime ? 0 : a.firstInstallTime > b.firstInstallTime ? 1:-1;
+            }
+        };
+    }
+	public static class InstallTimeComparator implements
+			Comparator<ResolveInfo> {
+		private PackageManager mPackageManager;
+		List<ResolveInfo> mapps;
+
+		InstallTimeComparator(PackageManager pm, List<ResolveInfo> apps) {
+			mPackageManager = pm;
+			mapps = apps;
+		}
+
+		public final int compare(ResolveInfo a, ResolveInfo b) {
+			String packageNameA = a.activityInfo.applicationInfo.packageName;
+			String packageNameB = b.activityInfo.applicationInfo.packageName;
+			long firstInstallTimeA = 0, firstInstallTimeB = 0;
+			try {
+				firstInstallTimeA = mPackageManager.getPackageInfo(
+						packageNameA, 0).firstInstallTime;
+				firstInstallTimeB = mPackageManager.getPackageInfo(
+						packageNameB, 0).firstInstallTime;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return 0;
+			}
+			return firstInstallTimeA == firstInstallTimeB ? 0
+					: firstInstallTimeA > firstInstallTimeB ? 1 : -1;
+		}
+	};
+	//mcoy add end
+    
     public static class WidgetAndShortcutNameComparator implements Comparator<Object> {
         private Collator mCollator;
         private PackageManager mPackageManager;
