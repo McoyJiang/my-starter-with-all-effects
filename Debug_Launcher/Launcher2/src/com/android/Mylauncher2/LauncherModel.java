@@ -93,8 +93,8 @@ public class LauncherModel extends BroadcastReceiver {
     final static String EFFECT_CHANGED_ACTION = "com.dewav.intent.effect_changed";
     //mcoy add for apps sort settings begin
     private static int mCurrentComparatorId = 0;  //this is the most important the specify which comparator th use
-    private final static int APP_SHORTCUT_NAME_COMPARATOR = 0;
-    private final static int INSTALL_TIME_COMPARATOR = 1;
+    public final static int APP_SHORTCUT_NAME_COMPARATOR = 0;
+    public final static int INSTALL_TIME_COMPARATOR = 1;
     final static String APPS_SORT_BY_ACTION = "com.dewav.intent.apps_sort_settings";
     final static String APPS_SORT_BY_COMPARATOR_ID = "apps_sort_id";
     //mcoy add end
@@ -191,6 +191,10 @@ public class LauncherModel extends BroadcastReceiver {
         mBatchSize = res.getInteger(R.integer.config_allAppsBatchSize);
         Configuration config = res.getConfiguration();
         mPreviousConfigMcc = config.mcc;
+        
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(app);
+        String effect = sp.getString(EffectSettings.KEY_APPS_SORT, EffectSettings.APPS_SORT_EFFECT_SHORT_NAME);
+        mCurrentComparatorId = Integer.parseInt(effect);
     }
 
     /** Runs the specified runnable immediately if called from the main thread, otherwise it is
