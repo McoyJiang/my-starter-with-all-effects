@@ -1928,7 +1928,7 @@ public final class Launcher extends Activity
             mWorkspace.exitWidgetResizeMode();
 
             // Back button is a no-op here, but give at least some feedback for the button press
-            mWorkspace.showOutlinesTemporarily();
+            //mWorkspace.showOutlinesTemporarily();  //点击返回时， 图标被放大的效果
         }
     }
 
