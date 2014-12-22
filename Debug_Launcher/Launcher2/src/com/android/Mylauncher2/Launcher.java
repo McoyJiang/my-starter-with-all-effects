@@ -2513,12 +2513,12 @@ public final class Launcher extends Activity
         setPivotsForZoom(toView, scale);
 
         // Shrink workspaces away if going to AppsCustomize from workspace
-        Animator workspaceAnim =
-               mWorkspace.getChangeStateAnimation(Workspace.State.SMALL, animated);
+        Animator workspaceAnim = null;
+        //       mWorkspace.getChangeStateAnimation(Workspace.State.SMALL, animated);
 
         if (animated) {
-            toView.setScaleX(scale);  //mcoy hide
-            toView.setScaleY(scale);  //mcoy hide
+            //toView.setScaleX(scale);  //mcoy hide
+            //toView.setScaleY(scale);  //mcoy hide
             final LauncherViewPropertyAnimator scaleAnim = new LauncherViewPropertyAnimator(toView);
             scaleAnim.
                 scaleX(1f).scaleY(1f).
@@ -2547,9 +2547,12 @@ public final class Launcher extends Activity
             // animation
             mStateAnimation = LauncherAnimUtils.createAnimatorSet();
             //mcoy modify and add begin
+            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", toView.getHeight(), 0);
             //ObjectAnimator translateAnim = ObjectAnimator.ofFloat(toView, "y", toView.getHeight(), 0);
-            mStateAnimation.play(scaleAnim).after(startDelay);
-            //mStateAnimation.play(translateAnim).after(startDelay);
+            ObjectAnimator translateAnim = ObjectAnimator.ofPropertyValuesHolder(toView, pvhY);
+            translateAnim.setInterpolator(new AccelerateDecelerateInterpolator());
+            //mStateAnimation.play(scaleAnim).after(startDelay);
+            mStateAnimation.play(translateAnim).after(startDelay);
             //mcoy modify and add end
             mStateAnimation.play(alphaAnim).after(startDelay);
 
@@ -2753,7 +2756,7 @@ public final class Launcher extends Activity
                 }
             });
 
-            mStateAnimation.playTogether(scaleAnim, alphaAnim);   //mcoy hide
+            //mStateAnimation.playTogether(scaleAnim, alphaAnim);   //mcoy hide
             if (workspaceAnim != null) {
                 mStateAnimation.play(workspaceAnim);
             }
