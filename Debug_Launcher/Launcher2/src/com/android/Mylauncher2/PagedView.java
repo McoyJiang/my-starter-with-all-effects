@@ -97,8 +97,10 @@ public abstract class PagedView extends ViewGroup implements ViewGroup.OnHierarc
     private float mDownMotionX;
     protected float mLastMotionX;
     protected float mLastMotionXRemainder;
+    protected float mLastMotionYRemainder;  //mcoy add for gesture in workspace 
     protected float mLastMotionY;
     protected float mTotalMotionX;
+    protected float mTotalMotionY;  //mcoy add for gesture in workspace 
     private int mLastScreenCenter = -1;
     private int[] mChildOffsets;
     private int[] mChildRelativeOffsets;
@@ -108,6 +110,8 @@ public abstract class PagedView extends ViewGroup implements ViewGroup.OnHierarc
     protected final static int TOUCH_STATE_SCROLLING = 1;
     protected final static int TOUCH_STATE_PREV_PAGE = 2;
     protected final static int TOUCH_STATE_NEXT_PAGE = 3;
+    protected final static int TOUCH_STATE_VERTICAL_SCROLLING = 4;  //mcoy add for gesture in workspace 
+    private final static float TOUCH_VERTIVAL_SLOP = 100f;  //mcoy add for gesture in workspace 
     protected final static float ALPHA_QUANTIZE_LEVEL = 0.0001f;
 
     protected int mTouchState = TOUCH_STATE_REST;
@@ -1015,7 +1019,9 @@ public abstract class PagedView extends ViewGroup implements ViewGroup.OnHierarc
                 mLastMotionX = x;
                 mLastMotionY = y;
                 mLastMotionXRemainder = 0;
+                mLastMotionYRemainder = 0;  //mcoy add for gesture in workspace 
                 mTotalMotionX = 0;
+                mTotalMotionY = 0; //mcoy add for gesture in workspace 
                 mActivePointerId = ev.getPointerId(0);
                 mAllowLongPress = true;
 
@@ -1067,6 +1073,19 @@ public abstract class PagedView extends ViewGroup implements ViewGroup.OnHierarc
          */
         return mTouchState != TOUCH_STATE_REST;
     }
+    
+    protected void determineScrollingVertical(MotionEvent ev, boolean b) {
+    	final int pointerIndex = ev.findPointerIndex(mActivePointerId);
+        if (pointerIndex == -1) {
+            return;
+        }
+    	final float y = ev.getY(pointerIndex);
+    	mTouchState = TOUCH_STATE_VERTICAL_SCROLLING;
+    	mTotalMotionY += Math.abs(mLastMotionY - y);
+        mLastMotionY = y;
+        mLastMotionYRemainder = 0;
+    	cancelCurrentPageLongPress();
+	}
 
     protected void determineScrollingStart(MotionEvent ev) {
         determineScrollingStart(ev, 1.0f);
@@ -1228,6 +1247,7 @@ public abstract class PagedView extends ViewGroup implements ViewGroup.OnHierarc
             mDownMotionX = mLastMotionX = ev.getX();
             mLastMotionXRemainder = 0;
             mTotalMotionX = 0;
+            mTotalMotionY = 0;  //mcoy add for gesture in workspace 
             mActivePointerId = ev.getPointerId(0);
             if (mTouchState == TOUCH_STATE_SCROLLING) {
                 pageBeginMoving();
@@ -1260,7 +1280,16 @@ public abstract class PagedView extends ViewGroup implements ViewGroup.OnHierarc
                 } else {
                     awakenScrollBars();
                 }
-            } else {
+            } else if(mTouchState == TOUCH_STATE_VERTICAL_SCROLLING){
+            	final int pointerIndex = ev.findPointerIndex(mActivePointerId);
+                final float y = ev.getY(pointerIndex);
+                final float deltaY = mLastMotionY + mLastMotionXRemainder - y;
+                
+                mTotalMotionY += Math.abs(deltaY);
+                
+                mLastMotionY = y;
+                mLastMotionYRemainder = deltaY - (int) deltaY;
+            }else {
                 determineScrollingStart(ev);
             }
             break;
@@ -1308,7 +1337,16 @@ public abstract class PagedView extends ViewGroup implements ViewGroup.OnHierarc
                 } else {
                     snapToDestination();
                 }
-            } else if (mTouchState == TOUCH_STATE_PREV_PAGE) {
+            } else if(mTouchState == TOUCH_STATE_VERTICAL_SCROLLING){
+            	final int activePointerId = mActivePointerId;
+                final VelocityTracker velocityTracker = mVelocityTracker;
+                velocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
+                int velocityY = (int) velocityTracker.getYVelocity(activePointerId);
+                Log.e("XING", "the velocityY is " + velocityY);
+                if(velocityY < 0 && mTotalMotionY > TOUCH_VERTIVAL_SLOP){
+                	changePageByGesture();
+                }
+            }else if (mTouchState == TOUCH_STATE_PREV_PAGE) {
                 // at this point we have not moved beyond the touch slop
                 // (otherwise mTouchState would be TOUCH_STATE_SCROLLING), so
                 // we can just page
@@ -1353,7 +1391,10 @@ public abstract class PagedView extends ViewGroup implements ViewGroup.OnHierarc
         return true;
     }
 
-    @Override
+    protected void changePageByGesture() {
+	}
+
+	@Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0) {
             switch (event.getAction()) {

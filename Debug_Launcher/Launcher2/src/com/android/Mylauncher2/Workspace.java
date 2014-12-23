@@ -706,9 +706,10 @@ public class Workspace extends SmoothPagedView
             cancelCurrentPageLongPress();
         }
 
-        if (theta > MAX_SWIPE_ANGLE) {
+        if (theta > MAX_SWIPE_ANGLE && deltaY > mTouchSlop * 2) {
             // Above MAX_SWIPE_ANGLE, we don't want to ever start scrolling the workspace
-            return;
+        	super.determineScrollingVertical(ev, true);  //mcoy add for gesture in workspace 
+            //return;
         } else if (theta > START_DAMPING_TOUCH_SLOP_ANGLE) {
             // Above START_DAMPING_TOUCH_SLOP_ANGLE and below MAX_SWIPE_ANGLE, we want to
             // increase the touch slop to make it harder to begin scrolling the workspace. This
@@ -4068,5 +4069,10 @@ public class Workspace extends SmoothPagedView
         if (qsbDivider != null) qsbDivider.setAlpha(reducedFade);
         if (dockDivider != null) dockDivider.setAlpha(reducedFade);
         scrollIndicator.setAlpha(1 - fade);
+    }
+    
+    @Override
+    protected void changePageByGesture() {
+    	mLauncher.showAllApps(true);
     }
 }
