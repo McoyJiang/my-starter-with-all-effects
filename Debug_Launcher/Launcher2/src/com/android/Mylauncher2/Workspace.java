@@ -39,7 +39,6 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Region.Op;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -62,6 +61,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+//mcoy add for multi-wallpaper begin
+import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
+import java.io.IOException;
+//mcoy add
 
 /**
  * The workspace is a wide area with a wallpaper and a finite number of pages.
@@ -253,6 +261,12 @@ public class Workspace extends SmoothPagedView
     private float[] mNewAlphas;
     private float[] mNewRotationYs;
     private float mTransitionProgress;
+    
+    //mcoy add for wallpaper begin
+	// this list store the each bitmap to be showed in respond mCurrentPage
+    private ArrayList<Bitmap> mBitmaps = new ArrayList<Bitmap>();
+    private float mTouchX;  //this record the first point of touch down event
+	// mcoy add end
 
     private final Runnable mBindPages = new Runnable() {
         @Override
@@ -415,6 +429,10 @@ public class Workspace extends SmoothPagedView
         final Resources res = getResources();
         try {
             mBackground = res.getDrawable(R.drawable.apps_customize_bg);
+            //mcoy add for multi-wallpaper begin
+            initMultiBackgrounds(mBitmaps);
+            setBackgroundDrawable(new BitmapDrawable(mBitmaps.get(mCurrentPage)));
+            //mcoy add end
         } catch (Resources.NotFoundException e) {
             // In this case, we will skip drawing background protection
         }
@@ -429,7 +447,27 @@ public class Workspace extends SmoothPagedView
         mFlingThresholdVelocity = (int) (FLING_THRESHOLD_VELOCITY * mDensity);
     }
 
-    @Override
+    //mcoy add for multi-wallpaperbegin
+    private void initMultiBackgrounds(ArrayList<Bitmap> mBitmaps) {
+    	Bitmap bitmap1 = BitmapFactory.decodeResource(getResources(),
+                R.drawable.bg1).copy(Bitmap.Config.ARGB_8888, true);
+    	mBitmaps.add(bitmap1);
+    	Bitmap bitmap2 = BitmapFactory.decodeResource(getResources(),
+                R.drawable.bg2).copy(Bitmap.Config.ARGB_8888, true);
+        mBitmaps.add(bitmap2);
+        Bitmap bitmap3 = BitmapFactory.decodeResource(getResources(),
+                R.drawable.bg3).copy(Bitmap.Config.ARGB_8888, true);
+        mBitmaps.add(bitmap3);
+        Bitmap bitmap4 = BitmapFactory.decodeResource(getResources(),
+                R.drawable.bg4).copy(Bitmap.Config.ARGB_8888, true);
+        mBitmaps.add(bitmap4);
+        Bitmap bitmap5 = BitmapFactory.decodeResource(getResources(),
+                R.drawable.bg5).copy(Bitmap.Config.ARGB_8888, true);
+        mBitmaps.add(bitmap5);
+	}
+    //mcoy add end
+
+	@Override
     protected int getScrollMode() {
         return SmoothPagedView.X_LARGE_MODE;
     }
@@ -651,6 +689,7 @@ public class Workspace extends SmoothPagedView
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         switch (ev.getAction() & MotionEvent.ACTION_MASK) {
         case MotionEvent.ACTION_DOWN:
+        	mTouchX = ev.getX();  //mcoy add for multi-wallpaper
             mXDown = ev.getX();
             mYDown = ev.getY();
             break;
@@ -665,6 +704,70 @@ public class Workspace extends SmoothPagedView
         }
         return super.onInterceptTouchEvent(ev);
     }
+    
+    //mcoy add for multi-wallpaper begin
+    @SuppressWarnings("deprecation")
+	@Override
+    public boolean onTouchEvent(MotionEvent event) {
+    	final int action = event.getAction();
+    	final float x = event.getX();
+		
+    	switch (action) {
+    	case MotionEvent.ACTION_DOWN:
+    		break;
+    	case MotionEvent.ACTION_MOVE:
+    		int distance = Math.abs((int)(mTouchX - x));
+    		boolean shouldSlideToRight = mTouchX > x;
+    		setBackgroundDrawable(getMergedDrawable(mCurrentPage, distance, shouldSlideToRight));
+    		break;
+    	}
+    	return super.onTouchEvent(event);
+    }
+    
+    @SuppressWarnings("deprecation")
+	private Drawable getMergedDrawable(int mCurrentPage, int distance, boolean shouldSlideToRight) {
+    	Bitmap bitmap1 = mBitmaps.get(mCurrentPage);
+    	Bitmap bitmap2 = null;
+    	int bitmap1Alpha, bitmap2Alpha;
+    	if(shouldSlideToRight) {
+    		if(mCurrentPage < mBitmaps.size() - 1) {
+    		    bitmap2 = mBitmaps.get(mCurrentPage + 1);
+    		} else {
+    			bitmap2 = mBitmaps.get(mCurrentPage);
+    		}
+    	} else {
+    		if(mCurrentPage >= 1) {
+    		    bitmap2 = mBitmaps.get(mCurrentPage - 1);
+    		} else {
+    			bitmap2 = mBitmaps.get(mCurrentPage);
+    		}
+    	}
+    	bitmap1Alpha = 255 - distance * 255 / 320;
+		bitmap2Alpha = 0 + distance * 255 / 320;
+		return new BitmapDrawable(mergeBitmap(bitmap1, bitmap2, bitmap1Alpha, bitmap2Alpha));
+	}
+    public Bitmap mergeBitmap(Bitmap bitmap1, Bitmap bitmap2, int bitmap1Alpha, int bitmap2Alpha) {
+
+        Bitmap newBitmap = null;
+
+        newBitmap = Bitmap.createBitmap(bitmap1);
+        Canvas canvas = new Canvas(newBitmap);
+        Paint paint = new Paint();
+
+        canvas.drawRect(0, 0, bitmap1.getWidth(), bitmap1.getHeight(), paint);
+
+        paint.setAlpha(bitmap1Alpha);
+        canvas.drawBitmap(bitmap1, 0, 0, paint);
+        paint = new Paint();
+        paint.setAlpha(bitmap2Alpha);
+        canvas.drawBitmap(bitmap2, 0, 0, paint);
+        canvas.save(Canvas.ALL_SAVE_FLAG);
+        // 存储新合成的图片
+        canvas.restore();
+        
+        return newBitmap;
+    }
+    //mcoy add end
 
     protected void reinflateWidgetsIfNecessary() {
         final int clCount = getChildCount();
@@ -727,7 +830,7 @@ public class Workspace extends SmoothPagedView
 
     protected void onPageBeginMoving() {
         super.onPageBeginMoving();
-
+        
         if (isHardwareAccelerated()) {
             updateChildrenLayersEnabled(false);
         } else {
@@ -927,7 +1030,7 @@ public class Workspace extends SmoothPagedView
             invalidate();
         }
     }
-
+    
     @Override
     protected void updateCurrentPageScroll() {
         super.updateCurrentPageScroll();
@@ -945,6 +1048,15 @@ public class Workspace extends SmoothPagedView
         super.snapToPage(whichPage, duration);
         computeWallpaperScrollRatio(whichPage);
     }
+    
+    //mcoy add for multi-wallpaper begin
+    @Override
+    protected void snapToPage(int whichPage, int delta, int duration) {
+    	Log.e("XIN", "mCurrentPage is " + mCurrentPage + " whichPage is " + whichPage);
+    	super.snapToPage(whichPage, delta, duration);
+    	setBackgroundDrawable(new BitmapDrawable(mBitmaps.get(whichPage)));
+    }
+    //mcoy add end
 
     protected void snapToPage(int whichPage, Runnable r) {
         if (mDelayedSnapToPageRunnable != null) {

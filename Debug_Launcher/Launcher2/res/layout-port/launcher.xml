@@ -32,14 +32,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/button_bar_height"
         android:layout_gravity="bottom" />
-    <include
-        android:id="@+id/paged_view_indicator"
-        layout="@layout/scroll_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="@dimen/button_bar_height" />
-
     <!-- The workspace contains 5 screens of cells -->
     <com.android.Mylauncher2.Workspace
         android:id="@+id/workspace"
@@ -49,6 +41,7 @@
         android:paddingRight="@dimen/workspace_right_padding"
         android:paddingTop="@dimen/workspace_top_padding"
         android:paddingBottom="@dimen/workspace_bottom_padding"
+        android:background="@drawable/bg1"
         launcher:defaultScreen="2"
         launcher:cellCountX="@integer/cell_count_x"
         launcher:cellCountY="@integer/cell_count_y"
@@ -62,6 +55,14 @@
         <include android:id="@+id/cell4" layout="@layout/workspace_screen" />
         <include android:id="@+id/cell5" layout="@layout/workspace_screen" />
     </com.android.Mylauncher2.Workspace>
+    
+    <include
+        android:id="@+id/paged_view_indicator"
+        layout="@layout/scroll_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="@dimen/button_bar_height" />
 
     <include layout="@layout/hotseat"
         android:id="@+id/hotseat"
