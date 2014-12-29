@@ -307,7 +307,7 @@ public class CellLayout extends ViewGroup {
     }
 
     public void enableHardwareLayers() {
-        mShortcutsAndWidgets.setLayerType(LAYER_TYPE_HARDWARE, sPaint);
+        mShortcutsAndWidgets.setLayerType(LAYER_TYPE_NONE, sPaint);
     }
 
     public void disableHardwareLayers() {
