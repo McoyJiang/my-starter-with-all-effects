@@ -274,8 +274,8 @@ s -->
     <!-- Dummy string [CHAR_LIMIT=60] -->
     <string name="custom_workspace_cling_description_2"></string>
     
-    <string name="menu_effect_settings">Effect settings</string>
-    <string name="workspace_effect">Workspace effect</string>
+    <string name="menu_effect_settings">MyLauncher settings</string>
+    <string name="workspace_effect">Workspace slide effect</string>
     
     <!-- mcoy add for apps sort order settings begin -->
     <string name="apps_sort_settings_title">Apps sorted by</string>
