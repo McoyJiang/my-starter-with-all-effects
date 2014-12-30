@@ -33,6 +33,11 @@ public class EffectSettings extends PreferenceActivity
     public static final String WORKSPACE_EFFECT_WINDMILLS = "Windmills";
     public static final String WORKSPACE_EFFECT_EXTRUSION = "Extrusion";
     
+    //mcoy add for theme settings begin
+    public static final String DEFAULT_THEME_PACKAGE = "com.android.Mylauncher";
+    public static final String CURRENT_THEME_PACKAGE = "theme_package"; 
+    //mcoy add end
+    
 	// added by mcoy for workspace effects
 	String mNewestWorkspaceEffect;
 	

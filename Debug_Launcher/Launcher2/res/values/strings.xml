@@ -280,5 +280,11 @@ s -->
     <!-- mcoy add for apps sort order settings begin -->
     <string name="apps_sort_settings_title">Apps sorted by</string>
     <!-- mcoy add end -->
+    
+    <!-- mcoy add for theme settings begin -->
+    <string name="mylauncher_theme_settings">Theme Settings</string>
+    <string name="mylauncher_theme_settings_title">MyLauncher Theme Settings</string>
+    <string name="default_theme_label">Default Theme</string>
+    <!-- mcoy add end -->
 
 </resources>

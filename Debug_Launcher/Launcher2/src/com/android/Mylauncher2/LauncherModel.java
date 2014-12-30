@@ -96,6 +96,7 @@ public class LauncherModel extends BroadcastReceiver {
     public final static int APP_SHORTCUT_NAME_COMPARATOR = 0;
     public final static int INSTALL_TIME_COMPARATOR = 1;
     final static String APPS_SORT_BY_ACTION = "com.dewav.intent.apps_sort_settings";
+    final static String MYLAUNCHER_THEME_CHANGED = "com.mcoy.intent.theme_changed";
     final static String APPS_SORT_BY_COMPARATOR_ID = "apps_sort_id";
     //mcoy add end
 
@@ -846,6 +847,14 @@ public class LauncherModel extends BroadcastReceiver {
 					APP_SHORTCUT_NAME_COMPARATOR);
             Log.e("JIANG", "the curr is " + curr);
             mCurrentComparatorId = curr;
+			forceReload();
+		}
+        //mcoy add end
+        
+        //mcoy add for apps sort settings begin
+		else if(MYLAUNCHER_THEME_CHANGED.equals(action)) {
+			Log.e("JIANG", "mylauncher theme has changed");
+			mIconCache.flush();
 			forceReload();
 		}
         //mcoy add end

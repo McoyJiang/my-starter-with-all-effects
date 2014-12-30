@@ -107,6 +107,20 @@
             </intent-filter>
         </activity>
         
+        <!-- mcoy add for theme settings begin -->
+        <activity 
+            android:name="com.android.Mylauncher2.ThemeSettingsActivity"
+            android:label="@string/mylauncher_theme_settings">
+        </activity>
+        <activity
+            android:name="com.android.Mylauncher2.DefaultThemeActivity"
+            android:label="@string/default_theme_label" >
+            <intent-filter>
+                <action android:name="mcoy.intent.action.THEME"></action>
+            </intent-filter>
+        </activity>
+        <!-- mcoy add end -->
+        
         <!-- Intent received used to prepopulate the default workspace. -->
         <receiver
             android:name="com.android.Mylauncher2.PreloadReceiver"

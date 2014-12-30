@@ -80,6 +80,12 @@ public class LauncherApplication extends Application {
         filter.addAction(LauncherModel.APPS_SORT_BY_ACTION);
         registerReceiver(mModel, filter);
         //mcoy add
+        
+        //mcoy add for theme settings begin
+        filter = new IntentFilter();
+        filter.addAction(LauncherModel.MYLAUNCHER_THEME_CHANGED);
+        registerReceiver(mModel, filter);
+        //mcoy add end
 
         // Register for changes to the favorites
         ContentResolver resolver = getContentResolver();

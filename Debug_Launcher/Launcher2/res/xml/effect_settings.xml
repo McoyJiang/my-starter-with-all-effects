@@ -17,4 +17,13 @@
             android:entries="@array/entry_apps_sort"
             android:entryValues="@array/entryvalues_apps_sort"
             android:defaultValue="0"/>
+        
+        <!-- mcoy add for theme settings begin -->
+        <Preference
+            android:key="theme_settings"
+            android:title="@string/mylauncher_theme_settings">
+        <intent android:targetPackage="com.android.Mylauncher"
+                android:targetClass="com.android.Mylauncher2.ThemeSettingsActivity" />
+        <!-- mcoy add end -->
+    </Preference>
 </PreferenceScreen>

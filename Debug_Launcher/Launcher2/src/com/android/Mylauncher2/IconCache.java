@@ -20,6 +20,7 @@ import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -28,6 +29,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.HashMap;
@@ -72,19 +74,28 @@ public class IconCache {
 
 	public Drawable getFullResIcon(Resources resources, int iconId) {
 		Drawable d;
-		Context context;
+		Context context = null;
 		Resources newResources;
+		String theme_package = null;
 		try {
-			// String iconName = resources.getResourceName(iconId);
 			String iconName = resources.getResourceEntryName(iconId);
 			Log.e("JIANG", "the iconName is " + iconName);
-			context = mContext.createPackageContext("com.mcoy.theme.first",
+			
+			SharedPreferences sp = PreferenceManager
+					.getDefaultSharedPreferences(mContext
+							.getApplicationContext());
+			theme_package = sp.getString(
+					EffectSettings.CURRENT_THEME_PACKAGE,
+					EffectSettings.DEFAULT_THEME_PACKAGE);
+			Log.e("JIANG", "the theme_package is " + theme_package);
+			
+			context = mContext.createPackageContext(theme_package,
 					Context.CONTEXT_IGNORE_SECURITY);
-			Log.e("JIANG", "the context based of " + "com.mcoy.theme.first"
+			Log.e("JIANG", "the context based of " + theme_package
 					+ " is not NULL!!!!");
 			newResources = context.getResources();
 			int newIconId = newResources.getIdentifier(
-					"com.mcoy.theme.first:drawable/" + iconName, null,
+					theme_package + ":drawable/" + iconName, null,
 					null);
 			Log.e("JIANG", "the newIconId for iconName is " + newIconId);
 			if (newIconId > 0) {
@@ -98,13 +109,13 @@ public class IconCache {
 				d = resources.getDrawableForDensity(iconId, mIconDpi);
 			}
 		} catch (NameNotFoundException e) {
-			Log.e("JIANG", "the context based of " + "com.mcoy.theme.first"
+			Log.e("JIANG", "the context based of " + theme_package
 					+ " is null!!!");
 			d = resources.getDrawableForDensity(iconId, mIconDpi);
 			e.printStackTrace();
 		} catch (Resources.NotFoundException e) {
 			Log.e("JIANG", "the resource id of" + iconId + " based of "
-					+ "com.mcoy.theme.first" + " is null!!!");
+					+ theme_package + " is null!!!");
 			d = null;
 		}
 
