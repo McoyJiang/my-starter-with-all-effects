@@ -2513,8 +2513,8 @@ public final class Launcher extends Activity
         setPivotsForZoom(toView, scale);
 
         // Shrink workspaces away if going to AppsCustomize from workspace
-        Animator workspaceAnim = null;
-        //       mWorkspace.getChangeStateAnimation(Workspace.State.SMALL, animated);
+        Animator workspaceAnim = 
+               mWorkspace.getChangeStateAnimation(Workspace.State.SMALL, animated);
 
         if (animated) {
             //toView.setScaleX(scale);  //mcoy hide
