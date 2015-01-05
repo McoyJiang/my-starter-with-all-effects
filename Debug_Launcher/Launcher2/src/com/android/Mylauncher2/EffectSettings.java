@@ -8,20 +8,27 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.MultiAutoCompleteTextView;
 import android.preference.ListPreference;
 
 public class EffectSettings extends PreferenceActivity
-            implements OnSharedPreferenceChangeListener{
+            implements OnSharedPreferenceChangeListener, OnPreferenceChangeListener{
 
     public static final String KEY_PREF_WORKSPACE_EFFECT = "workspace_effect";
     //mcoy add for apps sort settings begin
     public static final String KEY_APPS_SORT = "apps_sort";
     public static final String APPS_SORT_EFFECT_SHORT_NAME = "0";
     public static final String APPS_SORT_EFFECT_INSTASLLED_TIME = "1";
+    //mcoy add end
+    
+    //mcoy add for multi-wallpaper begin
+    public static final String KEY_MULTI_WALLPAPER = "multi_walllpaper";
     //mcoy add end
     
 
@@ -38,6 +45,8 @@ public class EffectSettings extends PreferenceActivity
     public static final String CURRENT_THEME_PACKAGE = "theme_package"; 
     //mcoy add end
     
+    private SharedPreferences mSharedPreferences = null;
+    
 	// added by mcoy for workspace effects
 	String mNewestWorkspaceEffect;
 	
@@ -45,11 +54,17 @@ public class EffectSettings extends PreferenceActivity
 	private ListPreference mComparatorChangePreference;
 	//mcoy add end
     
+	//mcoy add for multi-wallpaper begin
+	private CheckBoxPreference multiWallpaperPreference;
+	//mcoy add end
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         addPreferencesFromResource(R.xml.effect_settings);
+        
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         
         //mcoy add for apps sort settings begin
         mComparatorChangePreference = (ListPreference) findPreference(KEY_APPS_SORT);
@@ -58,15 +73,20 @@ public class EffectSettings extends PreferenceActivity
         mComparatorChangePreference.setValue(str);
         //mcoy add end
         
+        //mcoy add for multi-wallpaper begin
+        multiWallpaperPreference = (CheckBoxPreference) findPreference(KEY_MULTI_WALLPAPER);
+        multiWallpaperPreference.setOnPreferenceChangeListener(this);
+        multiWallpaperPreference.setChecked(isMultiWallpaperEnabled());
+        //mcoy add end
+        
         /* Set Default */
         PreferenceManager.setDefaultValues(this, R.xml.effect_settings, false);
         /* display summary */
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        updateSummary(this, sp, KEY_PREF_WORKSPACE_EFFECT);
-        updateSummary(this, sp, KEY_APPS_SORT);
+        updateSummary(this, mSharedPreferences, KEY_PREF_WORKSPACE_EFFECT);
+        updateSummary(this, mSharedPreferences, KEY_APPS_SORT);
     }
 
-    @Override
+	@Override
     protected void onPause() {        
         super.onPause();
         getPreferenceScreen().getSharedPreferences()
@@ -103,6 +123,18 @@ public class EffectSettings extends PreferenceActivity
 			finish();
 		}
 		//mcoy add end
+	}
+    
+	@Override
+	public boolean onPreferenceChange(Preference preference, Object newValue) {
+		if(KEY_MULTI_WALLPAPER.equals(preference.getKey())){
+			boolean isMultiWallpaperOn = (Boolean) newValue;
+			final Intent intent = new Intent(LauncherModel.SET_MULTI_WALLPAPER_ENABLED_ACTION);
+			intent.putExtra(LauncherModel.SET_MULTI_WALLPAPER_ENABLED_ID, isMultiWallpaperOn);
+			sendBroadcast(intent);
+			//mSharedPreferences.edit().putBoolean(KEY_MULTI_WALLPAPER, isMultiWallpaperOn).commit();
+		}
+		return true;
 	}
     
     private void updateSummary(Context ctx, SharedPreferences sp, String key) {
@@ -144,16 +176,16 @@ public class EffectSettings extends PreferenceActivity
         pref.setSummary(effects[idx]);
     }
     
-    public static  String getWorkspaeEffect(Context ctx) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
-        String effect = sp.getString(KEY_PREF_WORKSPACE_EFFECT, WORKSPACE_EFFECT_DEFAULT);
-        return effect;
-    }
+    //mcoy add for multi-wallpaper begin
+    private boolean isMultiWallpaperEnabled() {
+    	boolean isMultiWallpaperOn = mSharedPreferences.getBoolean(KEY_MULTI_WALLPAPER, false);
+		return isMultiWallpaperOn;
+	}
+    //mcoy add end
     
     //mcoy add for apps sort settings begin
     public String getAppSortSettignsValue(Context ctx) {
-    	SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
-        String effect = sp.getString(KEY_APPS_SORT, APPS_SORT_EFFECT_SHORT_NAME);
+        String effect = mSharedPreferences.getString(KEY_APPS_SORT, APPS_SORT_EFFECT_SHORT_NAME);
         return effect;
     }
     //mcoy add end

@@ -95,9 +95,13 @@ public class LauncherModel extends BroadcastReceiver {
     private static int mCurrentComparatorId = 0;  //this is the most important the specify which comparator th use
     public final static int APP_SHORTCUT_NAME_COMPARATOR = 0;
     public final static int INSTALL_TIME_COMPARATOR = 1;
-    final static String APPS_SORT_BY_ACTION = "com.dewav.intent.apps_sort_settings";
+    final static String APPS_SORT_BY_ACTION = "com.mcoy.intent.apps_sort_settings";
     final static String MYLAUNCHER_THEME_CHANGED = "com.mcoy.intent.theme_changed";
     final static String APPS_SORT_BY_COMPARATOR_ID = "apps_sort_id";
+    //mcoy add end
+    //mcoy add for multi-wallpaper begin
+    final static String SET_MULTI_WALLPAPER_ENABLED_ACTION = "com.mcoy.intent.set_multi_wallpaper_enable";
+    final static String SET_MULTI_WALLPAPER_ENABLED_ID = "set_multi_wallpaper_id";
     //mcoy add end
 
 
@@ -176,6 +180,7 @@ public class LauncherModel extends BroadcastReceiver {
         public void bindSearchablesChanged();
         public void onPageBoundSynchronously(int page);
 		public void onWorkspaceEffectChanged(String oldWorkspaceEffect);
+		public void multiWallpaperHasChanged(boolean isMultiWallpaperEnabled);
     }
 
     LauncherModel(LauncherApplication app, IconCache iconCache) {
@@ -196,6 +201,7 @@ public class LauncherModel extends BroadcastReceiver {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(app);
         String effect = sp.getString(EffectSettings.KEY_APPS_SORT, EffectSettings.APPS_SORT_EFFECT_SHORT_NAME);
         mCurrentComparatorId = Integer.parseInt(effect);
+        
     }
 
     /** Runs the specified runnable immediately if called from the main thread, otherwise it is
@@ -858,6 +864,13 @@ public class LauncherModel extends BroadcastReceiver {
 			forceReload();
 		}
         //mcoy add end
+        
+        //mcoy add for multi-wallpaper begin
+		else if(SET_MULTI_WALLPAPER_ENABLED_ACTION.equals(action)) {
+			boolean isEnabled = intent.getBooleanExtra(SET_MULTI_WALLPAPER_ENABLED_ID, false);
+			setMultiWallpaperEnabled(isEnabled);
+		}
+        //mcoy add end
     }
 
 	// Added by Joseth START
@@ -882,6 +895,22 @@ public class LauncherModel extends BroadcastReceiver {
 		return mWorkspaceEffect;
 	}
 	// Added by Joseth END
+	
+	//mcoy add for multi-wallppaer begin
+	private boolean isMultiWallpaperEnabled = false;
+	
+	public boolean isMultiWallpaperEnabled() {
+		return isMultiWallpaperEnabled;
+	}
+	
+	public void setMultiWallpaperEnabled(boolean isMultiWallpaperEnabled) {
+		this.isMultiWallpaperEnabled = isMultiWallpaperEnabled;
+		Callbacks callbacks = mCallbacks.get();
+		if (callbacks != null) {
+			callbacks.multiWallpaperHasChanged(isMultiWallpaperEnabled);
+		}
+	}
+	//mcoy add end
 
     private void forceReload() {
         resetLoadedState(true, true);

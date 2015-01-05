@@ -86,6 +86,12 @@ public class LauncherApplication extends Application {
         filter.addAction(LauncherModel.MYLAUNCHER_THEME_CHANGED);
         registerReceiver(mModel, filter);
         //mcoy add end
+        
+        //mcoy add for multi-wallpaper begin
+        filter = new IntentFilter();
+        filter.addAction(LauncherModel.SET_MULTI_WALLPAPER_ENABLED_ACTION);
+        registerReceiver(mModel, filter);
+        //mcoy add end
 
         // Register for changes to the favorites
         ContentResolver resolver = getContentResolver();

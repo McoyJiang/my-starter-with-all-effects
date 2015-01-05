@@ -431,7 +431,9 @@ public class Workspace extends SmoothPagedView
             mBackground = res.getDrawable(R.drawable.apps_customize_bg);
             //mcoy add for multi-wallpaper begin
             initMultiBackgrounds(mBitmaps);
-            setBackgroundDrawable(new BitmapDrawable(mBitmaps.get(mCurrentPage)));
+            if(mLauncher.isMultiWallpaperEnabled()) {
+                setBackgroundDrawable(new BitmapDrawable(mBitmaps.get(mCurrentPage)));
+            }
             //mcoy add end
         } catch (Resources.NotFoundException e) {
             // In this case, we will skip drawing background protection
@@ -464,6 +466,13 @@ public class Workspace extends SmoothPagedView
         Bitmap bitmap5 = BitmapFactory.decodeResource(getResources(),
                 R.drawable.bg5).copy(Bitmap.Config.ARGB_8888, true);
         mBitmaps.add(bitmap5);
+	}
+    public void multiWallpaperHasChanged(boolean isMultiWallpaperEnabled) {
+    	if(isMultiWallpaperEnabled) {
+    	    setBackgroundDrawable(new BitmapDrawable(mBitmaps.get(mCurrentPage)));
+    	} else {
+    		setBackgroundDrawable(null);
+    	}
 	}
     //mcoy add end
 
@@ -716,9 +725,12 @@ public class Workspace extends SmoothPagedView
     	case MotionEvent.ACTION_DOWN:
     		break;
     	case MotionEvent.ACTION_MOVE:
-    		int distance = Math.abs((int)(mTouchX - x));
-    		boolean shouldSlideToRight = mTouchX > x;
-    		setBackgroundDrawable(getMergedDrawable(mCurrentPage, distance, shouldSlideToRight));
+			if (mLauncher.isMultiWallpaperEnabled()) {
+				int distance = Math.abs((int) (mTouchX - x));
+				boolean shouldSlideToRight = mTouchX > x;
+				setBackgroundDrawable(getMergedDrawable(mCurrentPage, distance,
+						shouldSlideToRight));
+			}
     		break;
     	}
     	return super.onTouchEvent(event);
@@ -1054,7 +1066,9 @@ public class Workspace extends SmoothPagedView
     protected void snapToPage(int whichPage, int delta, int duration) {
     	Log.e("XIN", "mCurrentPage is " + mCurrentPage + " whichPage is " + whichPage);
     	super.snapToPage(whichPage, delta, duration);
-    	setBackgroundDrawable(new BitmapDrawable(mBitmaps.get(whichPage)));
+    	if(mLauncher.isMultiWallpaperEnabled()) {
+    	    setBackgroundDrawable(new BitmapDrawable(mBitmaps.get(whichPage)));
+    	}
     }
     //mcoy add end
 
@@ -4187,4 +4201,5 @@ public class Workspace extends SmoothPagedView
     protected void changePageByGesture() {
     	mLauncher.showAllApps(true);
     }
+
 }

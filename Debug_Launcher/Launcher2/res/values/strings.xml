@@ -286,5 +286,9 @@ s -->
     <string name="mylauncher_theme_settings_title">MyLauncher Theme Settings</string>
     <string name="default_theme_label">Default Theme</string>
     <!-- mcoy add end -->
+    
+    <!-- mcoy add for multi-wallpaper begin -->
+    <string name="multi_walllpaper_setting">Multi-Wallpaper</string>
+    <!-- mcoy add end -->
 
 </resources>

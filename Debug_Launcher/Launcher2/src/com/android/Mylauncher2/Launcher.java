@@ -62,6 +62,7 @@ import android.os.Message;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.os.SystemProperties;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.speech.RecognizerIntent;
 import android.text.Selection;
@@ -362,7 +363,12 @@ public final class Launcher extends Activity
         mSharedPrefs = getSharedPreferences(LauncherApplication.getSharedPreferencesKey(),
                 Context.MODE_PRIVATE);
         mModel = app.setLauncher(this);
-        mModel.loadEffectSettings(this); //Added by Joseth
+        mModel.loadEffectSettings(this); //Added by mcoy
+        //mcoy add for multi-wallpaper begin
+		mModel.setMultiWallpaperEnabled(PreferenceManager
+				.getDefaultSharedPreferences(app).getBoolean(
+						EffectSettings.KEY_MULTI_WALLPAPER, false));
+        //mcoy add end
         mIconCache = app.getIconCache();
         mDragController = new DragController(this);
         mInflater = getLayoutInflater();
@@ -3942,6 +3948,18 @@ public final class Launcher extends Activity
 		if (mWorkspace != null)
 			mWorkspace.screenScrolledReset(oldWorkspaceEffect);
 	}
+	
+	//mcoy add for multi-wallpaper begin
+	public boolean isMultiWallpaperEnabled() {
+		return mModel.isMultiWallpaperEnabled();
+	}
+
+	@Override
+	public void multiWallpaperHasChanged(boolean isMultiWallpaperEnabled) {
+		if(mWorkspace != null)
+			mWorkspace.multiWallpaperHasChanged(isMultiWallpaperEnabled);
+	}
+	//mcoy add end
 
 }
 
