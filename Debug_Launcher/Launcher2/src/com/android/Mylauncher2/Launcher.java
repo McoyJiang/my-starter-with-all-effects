@@ -2553,10 +2553,11 @@ public final class Launcher extends Activity
             // animation
             mStateAnimation = LauncherAnimUtils.createAnimatorSet();
             //mcoy modify and add begin
-            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", toView.getHeight(), 0);
+            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", toView.getHeight() - 300, 0);
             //ObjectAnimator translateAnim = ObjectAnimator.ofFloat(toView, "y", toView.getHeight(), 0);
             ObjectAnimator translateAnim = ObjectAnimator.ofPropertyValuesHolder(toView, pvhY);
-            translateAnim.setInterpolator(new AccelerateDecelerateInterpolator());
+            //translateAnim.setInterpolator(new AccelerateDecelerateInterpolator());
+            translateAnim.setDuration(800);
             //mStateAnimation.play(scaleAnim).after(startDelay);
             mStateAnimation.play(translateAnim).after(startDelay);
             //mcoy modify and add end
@@ -2604,6 +2605,8 @@ public final class Launcher extends Activity
             if (workspaceAnim != null) {
                 mStateAnimation.play(workspaceAnim);
             }
+            
+            hideHotseat(animated);
 
             boolean delayAnim = false;
             final ViewTreeObserver observer;
@@ -2960,6 +2963,13 @@ public final class Launcher extends Activity
     void showHotseat(boolean animated) {
         if (!LauncherApplication.isScreenLarge()) {
             if (animated) {
+				PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y",
+						mAppsCustomizeTabHost.getHeight(),
+						mAppsCustomizeTabHost.getHeight() - mHotseat.getHeight());
+				ObjectAnimator translateAnim = ObjectAnimator.ofPropertyValuesHolder(mHotseat, pvhY);
+	            translateAnim.setInterpolator(new AccelerateDecelerateInterpolator());
+	            translateAnim.setDuration(1000);
+	            translateAnim.start();
                 if (mHotseat.getAlpha() != 1f) {
                     int duration = 0;
                     if (mSearchDropTargetBar != null) {
@@ -2979,6 +2989,12 @@ public final class Launcher extends Activity
     void hideHotseat(boolean animated) {
         if (!LauncherApplication.isScreenLarge()) {
             if (animated) {
+            	PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y",
+						mHotseat.getY(), mAppsCustomizeTabHost.getHeight());
+				ObjectAnimator translateAnim = ObjectAnimator.ofPropertyValuesHolder(mHotseat, pvhY);
+	            translateAnim.setInterpolator(new AccelerateDecelerateInterpolator());
+	            translateAnim.setDuration(1000);
+	            translateAnim.start();
                 if (mHotseat.getAlpha() != 0f) {
                     int duration = 0;
                     if (mSearchDropTargetBar != null) {
