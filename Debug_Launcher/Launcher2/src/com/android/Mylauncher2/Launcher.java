@@ -3224,7 +3224,7 @@ public final class Launcher extends Activity
             sAppMarketIcon[coi] = updateTextButtonWithIconFromExternalActivity(
                     R.id.market_button, activityName, R.drawable.ic_launcher_market_holo,
                     TOOLBAR_ICON_METADATA_NAME);
-            marketButton.setVisibility(View.VISIBLE);
+            marketButton.setVisibility(View.GONE);
         } else {
             // We should hide and disable the view so that we don't try and restore the visibility
             // of it when we swap between drag & normal states from IconDropTarget subclasses.
