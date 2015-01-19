@@ -114,6 +114,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+//BEGIN: mcoy add for workspace preview
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PaintFlagsDrawFilter;
+import android.preference.PreferenceManager;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import com.android.Mylauncher2.edit.HomeEditView;
+import com.android.Mylauncher2.edit.HomeEditView.OnClickPageListener;
+import com.android.Mylauncher2.edit.PageInfo;
+//END
+
 /**
  * Default launcher application.
  */
@@ -134,6 +148,10 @@ public final class Launcher extends Activity
     private static final int MENU_MANAGE_APPS = MENU_WALLPAPER_SETTINGS + 1;
     private static final int MENU_SYSTEM_SETTINGS = MENU_MANAGE_APPS + 1;
     private static final int MENU_HELP = MENU_SYSTEM_SETTINGS + 1;
+
+    //mcoy add for preview begin
+    private static final int MENU_THUMB = MENU_HELP + 1;
+    //mcoy add for preview end
 
     private static final int REQUEST_CREATE_SHORTCUT = 1;
     private static final int REQUEST_CREATE_APPWIDGET = 5;
@@ -953,6 +971,21 @@ public final class Launcher extends Activity
             mHotseat.setup(this);
         }
 
+        //BEGIN: added by mcoy, add workspace preview
+        Log.e(TAG, "before has " + mWorkspace.getChildCount() + " CellLayouts");
+        int cellCount = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getInt("screen_count", 5);
+        Log.e(TAG, "should has " + cellCount + " CellLayouts");
+        for (int i = mWorkspace.getChildCount(); i < cellCount; i++) { 
+        	CellLayout cl = (CellLayout)mInflater.inflate(R.layout.workspace_screen,null);
+        	mWorkspace.addView(cl);
+        }
+        Log.e(TAG, "after has " + mWorkspace.getChildCount() + " CellLayouts");
+        mHomeEditView = (HomeEditView) findViewById(R.id.home_edit_view);
+        mHomeEditView.initWorkspace(mWorkspace);
+		mHomeEditView.setOnClickPageListener(mPreviewPageClickListener);
+		mHomeEditView.setAddClickListener(mPreviewAddClickListener);
+        //END
+
         // Setup the workspace
         mWorkspace.setHapticFeedbackEnabled(false);
         mWorkspace.setOnLongClickListener(this);
@@ -1405,7 +1438,18 @@ public final class Launcher extends Activity
                     // In all these cases, only animate if we're already on home
                     mWorkspace.exitWidgetResizeMode();
 					if (alreadyOnHome && mState == State.WORKSPACE && !mWorkspace.isTouchActive() &&
-                            openFolder == null && !backFromEffect) {
+                            openFolder == null && !backFromEffect) {   
+                    	//BEGIN:mcoy added for workspace preview
+                    	//if(mWorkspace.getCurrentPage() == mWorkspace.getDefaultHomePage()
+                    	//		&& mHomeEditView.getVisibility() != View.VISIBLE){
+                    	//	Log.e(TAG, "should show preview!!!!");
+                    	//	startHomeEdit();
+                    	//} else 
+                        if (mHomeEditView.getVisibility() == View.VISIBLE) {
+                    		showWorkspaceFormHomePreview(mWorkspace.getCurrentPage(),
+                    				mHomeEditView.getPreviewAllPages());
+                    	}
+                    	//END
                         mWorkspace.moveToDefaultScreen(true);
                     }
 
@@ -1446,6 +1490,202 @@ public final class Launcher extends Activity
 
         }
     }
+
+	//BEGIN: mcoy added for home edit preview
+	private HomeEditView mHomeEditView;
+	private List<ImageView> mImageHomes = new ArrayList<ImageView>();
+
+	private void startHomeEdit() {
+		Log.e(TAG, "~~~~~~~startHomeEdit()~~~~~~~~~~~~");
+		
+		mImageHomes.clear();
+		
+		List<View> views = new ArrayList<View>();
+		for (int i = 0; i < mWorkspace.getChildCount(); i++) {
+			/**FrameLayout cellPreview  = (FrameLayout)mInflater.inflate(R.layout.preview_item, mHomeEditView, false);
+			ImageView imagePreview = (ImageView) cellPreview.findViewById(R.id.preview);
+			final ImageView imageHome = (ImageView) cellPreview.findViewById(R.id.home);
+			imageHome.setTag(i);
+			// 将当前已有的页面生成缩略图，放到HomeEditView中进行显示
+			CellLayout view = (CellLayout) mWorkspace.getChildAt(i);
+			Bitmap bitmap = Bitmap.createBitmap(view.getWidth(),
+					view.getHeight(), Bitmap.Config.ARGB_8888);
+			// 绘制
+			final Canvas c = new Canvas(bitmap);
+			// 设置比例
+			view.dispatchDraw(c);
+			
+			imagePreview.setScaleType(ImageView.ScaleType.FIT_CENTER);
+			imagePreview.setImageBitmap(bitmap);
+			if(i == mWorkspace.getDefaultHomePage()) {
+				imageHome.setImageResource(R.drawable.preview_home_btn_light);
+			} else {
+				imageHome.setImageResource(R.drawable.preview_home_btn);
+			}
+			imageHome.setOnClickListener(mPreviewHomeClickListener);
+			mImageHomes.add(imageHome); */
+			
+			FrameLayout cellPreview = createPreviewPage(i, true);
+			views.add(cellPreview);
+			
+		}
+
+		mHomeEditView.addExistedPages(views);
+
+		mHomeEditView.setBackgroundColor(Color.TRANSPARENT);
+		mHomeEditView.setVisibility(View.VISIBLE);
+		mWorkspace.setVisibility(View.INVISIBLE);
+		mHotseat.setVisibility(View.GONE);
+		mSearchDropTargetBar.setVisibility(View.GONE);
+		mDockDivider.setVisibility(View.GONE);
+	}
+	
+	private OnClickPageListener mPreviewPageClickListener = new OnClickPageListener() {
+
+		@Override
+		public void onClickPage(int index, List<PageInfo> pages) {
+			Log.e(TAG, "onClickPage---the index is " + index);
+			showWorkspaceFormHomePreview(index, pages);
+		}
+	};
+	
+	/**
+	 * mcoy: this listener is used for clicking home imageview in each preview page
+	 * things to do:
+	 * a) set workspace's default home page
+	 * b) refresh all the imageviews in the mImageHomes
+	 */
+	private OnClickListener mPreviewHomeClickListener = new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			int i = (Integer) v.getTag();
+			Log.e(TAG, "onClick()--mPreviewHomeClickListener~~~the i is " + i);
+			mWorkspace.setDefaultHomePage(i);
+			
+			for(int j = 0; j < mImageHomes.size(); j++) {
+				if(j == i){
+					mImageHomes.get(j).setImageResource(R.drawable.preview_home_btn_light);
+				} else {
+					mImageHomes.get(j).setImageResource(R.drawable.preview_home_btn);
+				}
+			}
+		}
+	};
+
+	/**
+	 * mcoy: this listener is used for clicking the ADD page
+	 * it has three things to do: 
+	 * a) add one cell in workspace; 
+	 * b) add one page in the lase workspace preview;
+	 * c) add one ImageView in the mImageHomes 
+	 */
+	private OnClickListener mPreviewAddClickListener = new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			Log.e(TAG, "the ADD page is clicked!!!!");
+			if (mHomeEditView.getChildCount() == 9) {
+				Toast.makeText(Launcher.this, R.string.preview_page_already_full, 2000).show();
+				return;
+			} else {
+				//add one cell in workspace;
+		        CellLayout mCelllayout =(CellLayout)mInflater.inflate(R.layout.workspace_screen,null);
+		        mWorkspace.addView(mCelllayout);
+		        mWorkspace.requestLayout();
+				//add one page in the lase workspace preview;
+				//View view = createPreviewPage(mHomeEditView.getChildCount() - 1, false);
+				View view = createPreviewPage(-1, false);
+				mHomeEditView.addOnePage(view, mHomeEditView.getChildCount() - 1);
+				mHomeEditView.requestLayout(); 
+			}
+		}
+	};
+	
+	private OnClickListener mPreviewDeleteClickListener = new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			Log.e(TAG, "the delete image is clicked!!!!----" +
+					"the mHomeEditView.getChildCount() is " + mHomeEditView.getChildCount());
+			if(mHomeEditView.getChildCount() <= 6){
+				Toast.makeText(Launcher.this, R.string.preview_page_already_least, 2000).show();
+				return;
+			}
+			int pageTag = (Integer) v.getTag();
+			int pageId = ((View)v.getParent()).getId();
+			mHomeEditView.removeViewAt(pageId);
+			mHomeEditView.requestLayout();
+			mWorkspace.removeScreen(pageTag);
+		}
+	};
+	
+	private void showWorkspaceFormHomePreview (int index, List<PageInfo> pages) {
+		mWorkspace.setVisibility(View.VISIBLE); 
+		mHotseat.setVisibility(View.VISIBLE);
+		mSearchDropTargetBar.setVisibility(View.VISIBLE);
+		mDockDivider.setVisibility(View.VISIBLE);
+		mHomeEditView.setVisibility(View.GONE);
+		
+		mWorkspace.snapToPage(index);
+		mWorkspace.reorderChildren(pages);
+		// add by samuel:@{
+		if(index >= mWorkspace.getChildCount()){
+			if(mWorkspace.getCurrentPage() >= mWorkspace.getChildCount()){
+				mWorkspace.setCurrentPage(Launcher.DEFAULT_SCREEN);
+			}
+			index = mWorkspace.getCurrentPage();
+		}
+		// @}
+		mWorkspace.snapToPage(index);
+		// add for Bug #142267
+        mWorkspace.setHapticFeedbackEnabled(false);
+        mWorkspace.setOnLongClickListener(Launcher.this);
+		// add for Bug #142267
+	}
+	
+	/**
+	 *  mcoy 初始化preview，或者点击添加时、建创一个新的CellLayout
+	 *  最多创建9个页数， 不支持preview页面切换
+	 * @return
+	 */
+	private FrameLayout createPreviewPage(int pageIndex, boolean cellLayoutExist) {
+		FrameLayout cellPreview  = (FrameLayout)mInflater.inflate(R.layout.preview_item, mHomeEditView, false);
+		cellPreview.setTag(pageIndex);
+		ImageView imagePreview = (ImageView) cellPreview.findViewById(R.id.preview);
+		final ImageView imageHome = (ImageView) cellPreview.findViewById(R.id.home);
+		imageHome.setTag(pageIndex);
+		ImageView imageDelete = (ImageView) cellPreview.findViewById(R.id.delete);
+		imageDelete.setTag(pageIndex);
+		imageDelete.setOnClickListener(mPreviewDeleteClickListener);
+		
+		if(cellLayoutExist){
+			// 将当前已有的页面生成缩略图，放到HomeEditView中进行显示
+			CellLayout view = (CellLayout) mWorkspace.getChildAt(pageIndex);
+			Bitmap bitmap = Bitmap.createBitmap(view.getWidth(),
+					view.getHeight(), Bitmap.Config.ARGB_8888);
+			// 绘制
+			final Canvas c = new Canvas(bitmap);
+			// 设置比例
+			view.dispatchDraw(c);
+			
+			imagePreview.setScaleType(ImageView.ScaleType.FIT_CENTER);
+			imagePreview.setImageBitmap(bitmap);
+			if(pageIndex == mWorkspace.getDefaultHomePage()) {
+				imageHome.setImageResource(R.drawable.preview_home_btn_light);
+			} else {
+				imageHome.setImageResource(R.drawable.preview_home_btn);
+			}
+		} else {
+			imageHome.setImageResource(R.drawable.preview_home_btn);
+		}
+		
+		//imageHome.setOnClickListener(mPreviewHomeClickListener);
+		mImageHomes.add(imageHome);
+		
+		return cellPreview;
+	}
+	//END
 
     @Override
     public void onRestoreInstanceState(Bundle state) {
@@ -1631,6 +1871,10 @@ public final class Launcher extends Activity
         help.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 
+        //mcoy add for preview begin
+        menu.add(MENU_GROUP_WALLPAPER, MENU_THUMB, 0, R.string.menu_thumb);
+        //mcoy add for preview end
+
         menu.add(MENU_GROUP_WALLPAPER, MENU_WALLPAPER_SETTINGS, 0, R.string.menu_wallpaper)
             .setIcon(android.R.drawable.ic_menu_gallery)
             .setAlphabeticShortcut('W');
@@ -1665,6 +1909,10 @@ public final class Launcher extends Activity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
+		
+		if (mHomeEditView.getVisibility() == View.VISIBLE) {// add by mcoy
+			return false;
+		}
 
         if (mAppsCustomizeTabHost.isTransitioning()) {
             return false;
@@ -1680,6 +1928,9 @@ public final class Launcher extends Activity
         switch (item.getItemId()) {
         case MENU_WALLPAPER_SETTINGS:
             startWallpaper();
+            return true;
+        case MENU_THUMB:
+            startHomeEdit();
             return true;
         case MENU_EFFECT_SETTINGS:
         	startEffectSettings();
@@ -1931,6 +2182,13 @@ public final class Launcher extends Activity
                 closeFolder();
             }
         } else {
+        	
+        	//BEGIN: added by mocy, if workspace edit preview showing, show workspace's current page
+        	if(mHomeEditView != null && mHomeEditView.getVisibility() == View.VISIBLE){
+        		showWorkspaceFormHomePreview(mWorkspace.getCurrentPage(), mHomeEditView.getPreviewAllPages());
+        	}
+        	//END
+        	
             mWorkspace.exitWidgetResizeMode();
 
             // Back button is a no-op here, but give at least some feedback for the button press

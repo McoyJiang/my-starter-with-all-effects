@@ -54,6 +54,15 @@
         <include android:id="@+id/cell4" layout="@layout/workspace_screen" />
         <include android:id="@+id/cell5" layout="@layout/workspace_screen" />
     </com.android.Mylauncher2.Workspace>
+
+        <!-- BEGIN:mcoy add for home edit -->
+        <com.android.Mylauncher2.edit.HomeEditView
+            android:id="@+id/home_edit_view"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:visibility="gone" />
+        <!-- END -->
+        
     
     <include
         android:id="@+id/paged_view_indicator"

@@ -291,4 +291,10 @@ s -->
     <string name="multi_walllpaper_setting">Multi-Wallpaper</string>
     <!-- mcoy add end -->
 
+	<!-- BEGIN: added by mcoy, strings for workspace preview -->
+	<string name="menu_thumb">Mylauncher Preview</string>
+	<string name="preview_page_already_full">cannot add more pages!</string>
+	<string name="preview_page_already_least">cannot delete more pages!</string>
+	<!-- END -->
+
 </resources>

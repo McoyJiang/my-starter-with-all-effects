@@ -71,6 +71,13 @@ import android.graphics.drawable.BitmapDrawable;
 import java.io.IOException;
 //mcoy add
 
+//BEGIN: mcoy add for workspace preview
+import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
+import com.android.Mylauncher2.edit.PageInfo;
+import java.util.List;
+//END
+
 /**
  * The workspace is a wide area with a wallpaper and a finite number of pages.
  * Each page contains a number of icons, folders or widgets the user can
@@ -475,6 +482,125 @@ public class Workspace extends SmoothPagedView
     	}
 	}
     //mcoy add end
+
+    //BEGIN: mcoy added for workspace edit home preview
+	// 页面辑编完成后，重新排列CellLayout
+	public void reorderChildren(List<PageInfo> pages) {
+		Log.e(TAG, "the pages.size is " + pages.size());
+		List<View> views = removeOldViews();
+		View[] newViews = new View[pages.size()];
+
+		for (int i = 0; i < newViews.length; i++) {
+			PageInfo info = pages.get(i);
+			Log.e(TAG, "the info.originPage is " + info.originPage);
+			if (info.originPage != -1) {
+				newViews[i] = views.get(info.originPage);
+
+				// 新更此页面上的item的screen信息
+				CellLayout cell = (CellLayout) newViews[i];
+				ShortcutAndWidgetContainer cellShortAndWidget = cell.getShortcutsAndWidgets();
+				int countInCell = cellShortAndWidget.getChildCount();
+				Log.e(TAG, "there are " + countInCell + " items in " + i);
+				for (int j = 0; j < countInCell; j++) {
+					ItemInfo in = (ItemInfo) cellShortAndWidget.getChildAt(j).getTag();
+					// 设定新的screen
+					if(in != null && in.screen != i){
+						Log.e(TAG, "adding item in " + i);
+						in.screen = i;
+						LauncherModel.updateItemInDatabase(getContext(), in);
+					}
+				}
+
+			} else {
+				//newViews[i] = new CellLayout(mLauncher);
+				newViews[i] = (CellLayout) (LayoutInflater.from(mLauncher).inflate(R.layout.workspace_screen,null));
+			}
+		}
+
+		for (int i = 0; i < newViews.length; i++) {
+			Log.e(TAG, "Workspace---addView()");
+			// add by samuel:@{
+			//removeView(newViews[i]);
+			try {
+				addView(newViews[i]);
+			} catch (Exception e) {
+				// TODO: handle exception
+				newViews[i] = new CellLayout(mLauncher);
+				addView(newViews[i]);
+			}
+			// @}
+			//addView(newViews[i]);
+		}
+		// add by samuel:@{
+		if(getCurrentPage() >= getChildCount()){
+			setCurrentPage(Launcher.DEFAULT_SCREEN);
+		}
+		// @}
+		
+		//mcoy we save the celllayout's count, for reboor cell phone
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getContext());
+        sp.edit().putInt("screen_count", newViews.length).commit();
+
+		requestLayout();
+	}
+	
+	private List<View> removeOldViews() {
+    	List<View> list = new ArrayList<View>();
+    	for (int i = 0; i < getChildCount(); i++) {
+    		View view = getChildAt(i);
+    		list.add(view);
+    	}
+    	
+    	for (View view : list) {
+    		removeView(view);
+    	}
+    	
+    	return list;
+    }
+    //END
+
+    /**
+     * mcoy add begin: Remove the specified screen and all the contents
+     * @param screen
+     */
+    protected void removeScreen(int screen){
+        Log.e(TAG, "removeScreen---screen is " + screen);
+        if(screen == -1){
+            return;
+        }
+        final CellLayout layout = (CellLayout) getChildAt(screen);
+        ShortcutAndWidgetContainer cellShortAndWidget = layout.getShortcutsAndWidgets();
+        int childCount = cellShortAndWidget.getChildCount();
+	Log.e(TAG, "there are " + childCount + " children in the " + screen + " screen");
+        final LauncherModel model = mLauncher.getModel();
+        for (int j = 0; j < childCount; j++) {
+            final View view = cellShortAndWidget.getChildAt(j);
+            Object tag = view.getTag();
+            //DELETE ALL ITEMS FROM SCREEN
+            final ItemInfo item = (ItemInfo) tag;
+            if (item.container == LauncherSettings.Favorites.CONTAINER_DESKTOP) {
+                if (item instanceof LauncherAppWidgetInfo) {
+                    //model.removeDesktopAppWidget((LauncherAppWidgetInfo) item);
+                } else {
+                    //model.removeDesktopItem(item);
+                }
+            }
+            if (item instanceof FolderInfo) {
+                final FolderInfo userFolderInfo = (FolderInfo)item;
+                LauncherModel.deleteFolderContentsFromDatabase(mLauncher, userFolderInfo);
+            } else if (item instanceof LauncherAppWidgetInfo) {
+                final LauncherAppWidgetInfo launcherAppWidgetInfo = (LauncherAppWidgetInfo) item;
+                final LauncherAppWidgetHost appWidgetHost = mLauncher.getAppWidgetHost();
+                if (appWidgetHost != null) {
+                    appWidgetHost.deleteAppWidgetId(launcherAppWidgetInfo.appWidgetId);
+                }
+            }
+            LauncherModel.deleteItemFromDatabase(mLauncher, item);
+        }
+        //moveItemPositions(screen, -1);
+        //removeView(getChildAt(screen));
+    }
+    //mcoy add END
 
 	@Override
     protected int getScrollMode() {
@@ -1903,7 +2029,7 @@ public class Workspace extends SmoothPagedView
 
     private void initAnimationArrays() {
         final int childCount = getChildCount();
-        if (mOldTranslationXs != null) return;
+        if (mOldTranslationXs != null && mOldTranslationXs.length == childCount) return;
         mOldTranslationXs = new float[childCount];
         mOldTranslationYs = new float[childCount];
         mOldScaleXs = new float[childCount];
@@ -4201,5 +4327,19 @@ public class Workspace extends SmoothPagedView
     protected void changePageByGesture() {
     	mLauncher.showAllApps(true);
     }
+
+    /**
+     * BEGIN: mcoy add for workspace preview
+     * we set default page from workspace preview, after we click the home iamge
+     * @param i
+     */
+	public void setDefaultHomePage(int i) {
+		mDefaultPage = i;
+	}
+	
+	public int getDefaultHomePage() {
+		return mDefaultPage;
+	}
+	/** END */
 
 }

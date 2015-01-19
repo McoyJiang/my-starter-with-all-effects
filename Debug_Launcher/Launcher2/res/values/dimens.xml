@@ -155,4 +155,12 @@
     <dimen name="workspace_width_gap_port">0dp</dimen>
     <dimen name="workspace_height_gap_land">0dp</dimen>
     <dimen name="workspace_height_gap_port">0dp</dimen>
+    
+    <!-- BEGIN:Added by mcoy for workspace preview -->
+    <dimen name="workspace_preview_top">5dp</dimen>
+    <dimen name="workspace_preview_bottom">5dp</dimen>
+    <dimen name="workspace_preview_cell_height">30dp</dimen>
+    <dimen name="workspace_preview_home_height">30dp</dimen>
+    <dimen name="workspace_preview_delete_height">30dp</dimen>
+<!-- END -->	
 </resources>
