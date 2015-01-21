@@ -1531,13 +1531,36 @@ public final class Launcher extends Activity
 		}
 
 		mHomeEditView.addExistedPages(views);
-
-		mHomeEditView.setBackgroundColor(Color.TRANSPARENT);
-		mHomeEditView.setVisibility(View.VISIBLE);
-		mWorkspace.setVisibility(View.INVISIBLE);
-		mHotseat.setVisibility(View.GONE);
-		mSearchDropTargetBar.setVisibility(View.GONE);
-		mDockDivider.setVisibility(View.GONE);
+		
+		mStateAnimation = LauncherAnimUtils.createAnimatorSet();
+		final ObjectAnimator workspaceAlphaAnim = ObjectAnimator
+                .ofFloat(mWorkspace, "alpha", 1f, 0f)
+                .setDuration(1000);
+		workspaceAlphaAnim.setInterpolator(new DecelerateInterpolator(1.5f));
+		workspaceAlphaAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+            	mHomeEditView.setBackgroundColor(Color.TRANSPARENT);
+        		mHomeEditView.setVisibility(View.VISIBLE);
+        		mWorkspace.setVisibility(View.INVISIBLE);
+        		mHotseat.setVisibility(View.GONE);
+        		mSearchDropTargetBar.setVisibility(View.GONE);
+        		mDockDivider.setVisibility(View.GONE);
+            }
+        });
+		final float scale = (float) getResources().getInteger(
+				R.integer.config_appsCustomizeZoomScaleFactor);
+		mHomeEditView.setScaleX(scale);
+		mHomeEditView.setScaleY(scale);
+		final LauncherViewPropertyAnimator scaleAnim = new LauncherViewPropertyAnimator(mHomeEditView);
+        scaleAnim.
+            scaleX(1f).scaleY(1f).
+            setDuration(1000).
+            setInterpolator(new Workspace.ZoomOutInterpolator());
+        mStateAnimation.play(scaleAnim).after(500);
+        mStateAnimation.play(workspaceAlphaAnim);
+        workspaceAlphaAnim.setDuration(1000);
+		mStateAnimation.start();
 	}
 	
 	private OnClickPageListener mPreviewPageClickListener = new OnClickPageListener() {
@@ -1622,6 +1645,7 @@ public final class Launcher extends Activity
 	
 	private void showWorkspaceFormHomePreview (int index, List<PageInfo> pages) {
 		mWorkspace.setVisibility(View.VISIBLE); 
+		mWorkspace.setAlpha(1f);
 		mHotseat.setVisibility(View.VISIBLE);
 		mSearchDropTargetBar.setVisibility(View.VISIBLE);
 		mDockDivider.setVisibility(View.VISIBLE);
