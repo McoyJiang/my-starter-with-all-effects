@@ -1951,4 +1951,9 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
 
         return String.format(getContext().getString(stringId), page + 1, count);
     }
+    
+    @Override
+    protected View getScrollingIndicator() {
+    	return null;
+    }
 }
