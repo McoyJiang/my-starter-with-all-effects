@@ -2807,11 +2807,11 @@ public final class Launcher extends Activity
         if (animated) {
             //toView.setScaleX(scale);  //mcoy hide
             //toView.setScaleY(scale);  //mcoy hide
-            final LauncherViewPropertyAnimator scaleAnim = new LauncherViewPropertyAnimator(toView);
+            /**final LauncherViewPropertyAnimator scaleAnim = new LauncherViewPropertyAnimator(toView);
             scaleAnim.
                 scaleX(1f).scaleY(1f).
                 setDuration(duration).
-                setInterpolator(new Workspace.ZoomOutInterpolator());
+                setInterpolator(new Workspace.ZoomOutInterpolator());*/
 
             toView.setVisibility(View.VISIBLE);
             toView.setAlpha(0f);
@@ -2835,11 +2835,11 @@ public final class Launcher extends Activity
             // animation
             mStateAnimation = LauncherAnimUtils.createAnimatorSet();
             //mcoy modify and add begin
-            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", toView.getHeight() - 300, 0);
+            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", mAppsCustomizeContent.getHeight() - 300, 0);
             //ObjectAnimator translateAnim = ObjectAnimator.ofFloat(toView, "y", toView.getHeight(), 0);
-            ObjectAnimator translateAnim = ObjectAnimator.ofPropertyValuesHolder(toView, pvhY);
+            ObjectAnimator translateAnim = ObjectAnimator.ofPropertyValuesHolder(mAppsCustomizeContent, pvhY);
             //translateAnim.setInterpolator(new AccelerateDecelerateInterpolator());
-            translateAnim.setDuration(800);
+            translateAnim.setDuration(300);
             //mStateAnimation.play(scaleAnim).after(startDelay);
             mStateAnimation.play(translateAnim).after(startDelay);
             //mcoy modify and add end
