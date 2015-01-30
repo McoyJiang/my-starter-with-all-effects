@@ -1487,6 +1487,10 @@ public final class Launcher extends Activity
                 // Process the intent immediately.
                 processIntent.run();
             }
+            
+            if(mHotseat.getAlpha() != 1f) {
+            	showHotseat(true);
+            }
 
         }
     }
@@ -2835,15 +2839,17 @@ public final class Launcher extends Activity
             // animation
             mStateAnimation = LauncherAnimUtils.createAnimatorSet();
             //mcoy modify and add begin
-            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", mAppsCustomizeContent.getHeight() - 300, 0);
+            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", mAppsCustomizeContent.getHeight() - 100, 0);
             //ObjectAnimator translateAnim = ObjectAnimator.ofFloat(toView, "y", toView.getHeight(), 0);
             ObjectAnimator translateAnim = ObjectAnimator.ofPropertyValuesHolder(mAppsCustomizeContent, pvhY);
-            //translateAnim.setInterpolator(new AccelerateDecelerateInterpolator());
-            translateAnim.setDuration(300);
+            translateAnim.setInterpolator(new AccelerateDecelerateInterpolator());
+            translateAnim.setDuration(1500);
             //mStateAnimation.play(scaleAnim).after(startDelay);
-            mStateAnimation.play(translateAnim).after(startDelay);
+            //mStateAnimation.play(translateAnim).after(startDelay);
+            mStateAnimation.play(translateAnim).with(workspaceAnim);
             //mcoy modify and add end
             mStateAnimation.play(alphaAnim).after(startDelay);
+            //mStateAnimation.play(alphaAnim).with(workspaceAnim);
 
             mStateAnimation.addListener(new AnimatorListenerAdapter() {
                 boolean animationCancelled = false;
@@ -2887,6 +2893,8 @@ public final class Launcher extends Activity
             if (workspaceAnim != null) {
                 mStateAnimation.play(workspaceAnim);
             }
+            
+            showBottomLayout();
             
             hideHotseat(animated);
 
@@ -3001,7 +3009,7 @@ public final class Launcher extends Activity
 
         setPivotsForZoom(fromView, scaleFactor);
         updateWallpaperVisibility(true);
-        showHotseat(animated);
+        hideBottomLayout();
         if (animated) {
             final LauncherViewPropertyAnimator scaleAnim =
                     new LauncherViewPropertyAnimator(fromView);
@@ -3047,10 +3055,18 @@ public final class Launcher extends Activity
                 }
             });
 
+            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", 0, mAppsCustomizeContent.getHeight());
+            ObjectAnimator translateAnim = ObjectAnimator.ofPropertyValuesHolder(mAppsCustomizeContent, pvhY);
+            translateAnim.setDuration(1000);
+            
             //mStateAnimation.playTogether(scaleAnim, alphaAnim);   //mcoy hide
+            mStateAnimation.play(translateAnim).with(workspaceAnim);
             if (workspaceAnim != null) {
-                mStateAnimation.play(workspaceAnim);
+                mStateAnimation.play(workspaceAnim).after(100);
             }
+            
+            showHotseat(animated);
+            
             dispatchOnLauncherTransitionStart(fromView, animated, true);
             dispatchOnLauncherTransitionStart(toView, animated, true);
             final Animator stateAnimation = mStateAnimation;
@@ -3245,13 +3261,15 @@ public final class Launcher extends Activity
     void showHotseat(boolean animated) {
         if (!LauncherApplication.isScreenLarge()) {
             if (animated) {
+            	AnimatorSet as = LauncherAnimUtils.createAnimatorSet();
 				PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y",
 						mAppsCustomizeTabHost.getHeight(),
 						mAppsCustomizeTabHost.getHeight() - mHotseat.getHeight());
 				ObjectAnimator translateAnim = ObjectAnimator.ofPropertyValuesHolder(mHotseat, pvhY);
 	            translateAnim.setInterpolator(new AccelerateDecelerateInterpolator());
 	            translateAnim.setDuration(1000);
-	            translateAnim.start();
+	            as.play(translateAnim).after(400);
+	            as.start();
                 if (mHotseat.getAlpha() != 1f) {
                     int duration = 0;
                     if (mSearchDropTargetBar != null) {
@@ -3288,6 +3306,14 @@ public final class Launcher extends Activity
                 mHotseat.setAlpha(0f);
             }
         }
+    }
+    
+    void showBottomLayout() {
+    	mAppsCustomizeContent.showBottomLayout();
+    }
+    
+    void hideBottomLayout(){
+    	mAppsCustomizeContent.hideBottomLayout();
     }
 
     /**

@@ -91,6 +91,7 @@
                 android:layout_height="20dip"
                 android:layout_gravity="bottom"
                 android:gravity="center"
+                android:visibility="gone"
                 android:background="@android:color/transparent"
             />
         </FrameLayout>

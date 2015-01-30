@@ -58,6 +58,7 @@ import com.android.Mylauncher.R;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -2050,6 +2051,7 @@ public class Workspace extends SmoothPagedView
     }
 
     Animator getChangeStateAnimation(final State state, boolean animated, int delay) {
+    	Log.e("JIANG", "the state is " + state + " mState is " + mState);
         if (mState == state) {
             return null;
         }
@@ -2071,6 +2073,7 @@ public class Workspace extends SmoothPagedView
         final boolean stateIsSpringLoaded = (state == State.SPRING_LOADED);
         final boolean stateIsSmall = (state == State.SMALL);
         float finalScaleFactor = 1.0f;
+        int finalRotation = 90;
         float finalBackgroundAlpha = stateIsSpringLoaded ? 1.0f : 0f;
         float translationX = 0;
         float translationY = 0;
@@ -2088,6 +2091,7 @@ public class Workspace extends SmoothPagedView
                 setLayoutScale(finalScaleFactor);
             }
         } else {
+        	finalRotation = 0;
             setPageSpacing(mOriginalPageSpacing);
             setLayoutScale(1.0f);
         }
@@ -2154,14 +2158,23 @@ public class Workspace extends SmoothPagedView
                     cl.setShortcutAndWidgetAlpha(mNewAlphas[i]);
                     cl.setRotationY(mNewRotationYs[i]);
                 } else {
-                    LauncherViewPropertyAnimator a = new LauncherViewPropertyAnimator(cl);
+                    /**LauncherViewPropertyAnimator a = new LauncherViewPropertyAnimator(cl);
                     a.translationX(mNewTranslationXs[i])
                         .translationY(mNewTranslationYs[i])
                         .scaleX(mNewScaleXs[i])
                         .scaleY(mNewScaleYs[i])
                         .setDuration(duration)
                         .setInterpolator(mZoomInInterpolator);
-                    anim.play(a);
+                    anim.play(a);*/
+                	
+                	Log.e("JIANG", " the finalRotation is " + finalRotation);
+                	//cl.setPivotX(cl.getWidth() / 2);   //此行代表celllayout旋转时的轴
+                	//cl.setPivotY(cl.getHeight() / 2);
+                	LauncherViewPropertyAnimator rotateAnim = new LauncherViewPropertyAnimator(cl);
+                	rotateAnim.rotationX(finalRotation)
+                	.setDuration(1500)
+                	.setInterpolator(mZoomInInterpolator);
+                	anim.play(rotateAnim);
 
                     if (mOldAlphas[i] != mNewAlphas[i] || currentAlpha != mNewAlphas[i]) {
                         LauncherViewPropertyAnimator alphaAnim =

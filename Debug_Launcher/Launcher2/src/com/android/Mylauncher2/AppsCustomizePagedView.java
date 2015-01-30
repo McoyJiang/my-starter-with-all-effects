@@ -364,6 +364,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         if (getImportantForAccessibility() == View.IMPORTANT_FOR_ACCESSIBILITY_AUTO) {
             setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
         }
+        
     }
 
     @Override
@@ -1015,7 +1016,6 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     
     //wufen add for bottom count
     public void setCurPage(int page) {
-        mLayoutBottom = (LinearLayout) mLauncher.findViewById(R.id.botton_moons);
         mLayoutBottom.removeAllViews();
         if (getPageCount() > 1) {
             for (int i = 0; i < getPageCount(); i++) {
@@ -1744,6 +1744,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     public void setup(Launcher launcher, DragController dragController) {
         mLauncher = launcher;
         mDragController = dragController;
+        mLayoutBottom = (LinearLayout) mLauncher.findViewById(R.id.botton_moons);
     }
 
     /**
@@ -1956,4 +1957,12 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     protected View getScrollingIndicator() {
     	return null;
     }
+
+    public void showBottomLayout() {
+    	mLayoutBottom.setVisibility(View.VISIBLE);
+    }
+    
+	public void hideBottomLayout() {
+		mLayoutBottom.setVisibility(View.GONE);
+	}
 }
