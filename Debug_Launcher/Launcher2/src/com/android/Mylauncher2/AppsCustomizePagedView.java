@@ -1953,6 +1953,11 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         return String.format(getContext().getString(stringId), page + 1, count);
     }
     
+    /**
+     * mcoy add override parent's method
+     * return null to make apps view indicator invisible, 
+     * for the aim of showing my own indicator
+     */
     @Override
     protected View getScrollingIndicator() {
     	return null;
