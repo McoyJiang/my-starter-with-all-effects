@@ -1,0 +1,27 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<LinearLayout xmlns:android = "http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	
+	<GridView android:layout_width = "fill_parent"
+		android:layout_height = "fill_parent" 
+		android:padding="10px"
+		android:numColumns = "3" 
+		android:horizontalSpacing = "10dp" 
+		android:verticalSpacing = "10dp" 
+		android:columnWidth = "60dp" 
+		android:listSelector="@drawable/grid_selector"
+		android:stretchMode = "columnWidth" 
+		android:gravity = "center"
+		android:id = "@+id/gv_menu">
+		<!-- 属性说明 
+		android:numColumns = "auto_fit"，GridView的列数设为自动
+		android:columnWidth = "90dp" ，每列的宽度，即item的宽度
+		android:stretchMode="columnWidth"，缩放与列宽大小同步
+		android:verticalSpacing="10dp"，两行之间的边距，如行一(NO.0~NO.2)与行二(NO.3~NO.5)间距为10dp 
+		android:horizontalSpacing="10dp"，两列之间的边距
+		--> 
+	</GridView>
+	
+</LinearLayout>

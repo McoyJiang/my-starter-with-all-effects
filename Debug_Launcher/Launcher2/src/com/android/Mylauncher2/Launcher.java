@@ -123,6 +123,12 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+//mcoy add for self-defined menu begin
+import android.view.Gravity;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+//mcoy add end
+
 import com.android.Mylauncher2.edit.HomeEditView;
 import com.android.Mylauncher2.edit.HomeEditView.OnClickPageListener;
 import com.android.Mylauncher2.edit.PageInfo;
@@ -454,7 +460,55 @@ public final class Launcher extends Activity
 
         // On large interfaces, we want the screen to auto-rotate based on the current orientation
         unlockScreenOrientation(true);
+        
+        buildMenu();  // mcoy add for self-defined menu
     }
+    
+    //mcoy add for self-defined menu beign
+    private List<CustomedMenuItem> menuItems;
+    private CustomedMenu customedMenu;
+    
+	private void buildMenu() {
+		
+		menuItems = new ArrayList<CustomedMenuItem>();
+		
+		customedMenu = new CustomedMenu(this, menuItems);
+		
+		menuItems.add(new CustomedMenuItem("return",
+				R.drawable.all_apps_button_icon));
+		menuItems.add(new CustomedMenuItem("return",
+				R.drawable.all_apps_button_icon));
+		menuItems.add(new CustomedMenuItem("return",
+				R.drawable.all_apps_button_icon));
+		menuItems.add(new CustomedMenuItem("return",
+				R.drawable.all_apps_button_icon));
+		menuItems.add(new CustomedMenuItem("return",
+				R.drawable.all_apps_button_icon));
+		menuItems.add(new CustomedMenuItem("return",
+				R.drawable.all_apps_button_icon));
+		
+		customedMenu.dataUpdate();
+		
+		customedMenu.setMenuItemListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parents, View view, int position,
+					long id) {
+				menuDismiss();
+				switch (position) {
+				case 0:
+					finish();
+					break;
+				} 
+			}
+    	});
+		
+	}
+	
+	private void menuDismiss() {
+		customedMenu.dismiss();
+    }
+    //mcoy add end
 
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
@@ -1886,55 +1940,58 @@ public final class Launcher extends Activity
             return false;
         }
 
-        super.onCreateOptionsMenu(menu);
-
-        Intent manageApps = new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS);
-        manageApps.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-        Intent settings = new Intent(android.provider.Settings.ACTION_SETTINGS);
-        settings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-        String helpUrl = getString(R.string.help_url);
-        Intent help = new Intent(Intent.ACTION_VIEW, Uri.parse(helpUrl));
-        help.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-
-        //mcoy add for preview begin
-        menu.add(MENU_GROUP_WALLPAPER, MENU_THUMB, 0, R.string.menu_thumb);
-        //mcoy add for preview end
-
-        menu.add(MENU_GROUP_WALLPAPER, MENU_WALLPAPER_SETTINGS, 0, R.string.menu_wallpaper)
-            .setIcon(android.R.drawable.ic_menu_gallery)
-            .setAlphabeticShortcut('W');
-        menu.add(MENU_GROUP_EFFECT, MENU_MANAGE_APPS, 0, R.string.menu_manage_apps)
-            .setIcon(android.R.drawable.ic_menu_manage)
-            .setIntent(manageApps)
-            .setAlphabeticShortcut('M');
-                /* Added by Joseth Start */
-        Intent effectSettings = new Intent();
-        effectSettings.setClass(getApplicationContext(), EffectSettings.class);
-        effectSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-        		| Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-        String currentEffect = mModel.getWorkspaceEffect();
-        effectSettings.putExtra(EffectSettings.KEY_PREF_WORKSPACE_EFFECT, currentEffect); // added by robson
-        menu.add(0, MENU_EFFECT_SETTINGS, 0, R.string.menu_effect_settings)
-            .setIcon(android.R.drawable.ic_menu_preferences)
-            .setAlphabeticShortcut('E');
-                /* Added by Joseth End */
-        menu.add(0, MENU_SYSTEM_SETTINGS, 0, R.string.menu_settings)
-            .setIcon(android.R.drawable.ic_menu_preferences)
-            .setIntent(settings)
-            .setAlphabeticShortcut('P');
-        if (!helpUrl.isEmpty()) {
-            menu.add(0, MENU_HELP, 0, R.string.menu_help)
-                .setIcon(android.R.drawable.ic_menu_help)
-                .setIntent(help)
-                .setAlphabeticShortcut('H');
-        }
-        return true;
+//        super.onCreateOptionsMenu(menu);
+//
+//        Intent manageApps = new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS);
+//        manageApps.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+//                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+//        Intent settings = new Intent(android.provider.Settings.ACTION_SETTINGS);
+//        settings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+//                | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+//        String helpUrl = getString(R.string.help_url);
+//        Intent help = new Intent(Intent.ACTION_VIEW, Uri.parse(helpUrl));
+//        help.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+//                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+//
+//        //mcoy add for preview begin
+//        menu.add(MENU_GROUP_WALLPAPER, MENU_THUMB, 0, R.string.menu_thumb);
+//        //mcoy add for preview end
+//
+//        menu.add(MENU_GROUP_WALLPAPER, MENU_WALLPAPER_SETTINGS, 0, R.string.menu_wallpaper)
+//            .setIcon(android.R.drawable.ic_menu_gallery)
+//            .setAlphabeticShortcut('W');
+//        menu.add(MENU_GROUP_EFFECT, MENU_MANAGE_APPS, 0, R.string.menu_manage_apps)
+//            .setIcon(android.R.drawable.ic_menu_manage)
+//            .setIntent(manageApps)
+//            .setAlphabeticShortcut('M');
+//                /* Added by Joseth Start */
+//        Intent effectSettings = new Intent();
+//        effectSettings.setClass(getApplicationContext(), EffectSettings.class);
+//        effectSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+//        		| Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+//        String currentEffect = mModel.getWorkspaceEffect();
+//        effectSettings.putExtra(EffectSettings.KEY_PREF_WORKSPACE_EFFECT, currentEffect); // added by robson
+//        menu.add(0, MENU_EFFECT_SETTINGS, 0, R.string.menu_effect_settings)
+//            .setIcon(android.R.drawable.ic_menu_preferences)
+//            .setAlphabeticShortcut('E');
+//                /* Added by Joseth End */
+//        menu.add(0, MENU_SYSTEM_SETTINGS, 0, R.string.menu_settings)
+//            .setIcon(android.R.drawable.ic_menu_preferences)
+//            .setIntent(settings)
+//            .setAlphabeticShortcut('P');
+//        if (!helpUrl.isEmpty()) {
+//            menu.add(0, MENU_HELP, 0, R.string.menu_help)
+//                .setIcon(android.R.drawable.ic_menu_help)
+//                .setIntent(help)
+//                .setAlphabeticShortcut('H');
+//        }
+//        return true;
+        //mcou modify for self-defined menu
+        menu.add("menu");
+        return super.onCreateOptionsMenu(menu);  
     }
 
-    @Override
+    /**@Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
 		
@@ -1949,9 +2006,9 @@ public final class Launcher extends Activity
         menu.setGroupVisible(MENU_GROUP_WALLPAPER, !allAppsVisible);
 
         return true;
-    }
+    }*/
 
-    @Override
+    /**@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case MENU_WALLPAPER_SETTINGS:
@@ -1966,7 +2023,22 @@ public final class Launcher extends Activity
         }
 
         return super.onOptionsItemSelected(item);
+    }*/
+    
+    //mcoy add for self-defined menu begin
+    @Override
+    public boolean onMenuOpened(int featureId, Menu menu) {  
+        if (customedMenu != null) {
+            if (customedMenu.isShowing())  
+            	customedMenu.dismiss();  
+            else {
+            	customedMenu.showAtLocation(findViewById(R.id.drag_layer),  
+                        Gravity.BOTTOM, 0, 0);
+            }
+        }  
+        return false;
     }
+    //mcoy add end
 
     @Override
     public boolean onSearchRequested() {
