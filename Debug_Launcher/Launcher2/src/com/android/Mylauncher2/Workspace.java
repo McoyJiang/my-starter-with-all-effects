@@ -2158,23 +2158,23 @@ public class Workspace extends SmoothPagedView
                     cl.setShortcutAndWidgetAlpha(mNewAlphas[i]);
                     cl.setRotationY(mNewRotationYs[i]);
                 } else {
-                    /**LauncherViewPropertyAnimator a = new LauncherViewPropertyAnimator(cl);
+                    LauncherViewPropertyAnimator a = new LauncherViewPropertyAnimator(cl);
                     a.translationX(mNewTranslationXs[i])
                         .translationY(mNewTranslationYs[i])
                         .scaleX(mNewScaleXs[i])
                         .scaleY(mNewScaleYs[i])
                         .setDuration(duration)
                         .setInterpolator(mZoomInInterpolator);
-                    anim.play(a);*/
+                    anim.play(a);
                 	
                 	Log.e("JIANG", " the finalRotation is " + finalRotation);
                 	//cl.setPivotX(cl.getWidth() / 2);   //此行代表celllayout旋转时的轴
                 	//cl.setPivotY(cl.getHeight() / 2);
-                	LauncherViewPropertyAnimator rotateAnim = new LauncherViewPropertyAnimator(cl);
+                	/**LauncherViewPropertyAnimator rotateAnim = new LauncherViewPropertyAnimator(cl);
                 	rotateAnim.rotationX(finalRotation)
                 	.setDuration(1500)
                 	.setInterpolator(mZoomInInterpolator);
-                	anim.play(rotateAnim);
+                	anim.play(rotateAnim);*/
 
                     if (mOldAlphas[i] != mNewAlphas[i] || currentAlpha != mNewAlphas[i]) {
                         LauncherViewPropertyAnimator alphaAnim =
