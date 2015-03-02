@@ -1,14 +1,12 @@
 package com.android.Mylauncher2;
 
 /**
- * �˵�
+ * 
  */
 public class CustomedMenuItem {
 
-	//�˵����
 	private String title;
 	
-	//�˵�ͼ����Դid
 	private int iconID;
 
 	public CustomedMenuItem(String title, int iconID) {

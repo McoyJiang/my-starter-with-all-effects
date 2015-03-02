@@ -474,18 +474,18 @@ public final class Launcher extends Activity
 		
 		customedMenu = new CustomedMenu(this, menuItems);
 		
-		menuItems.add(new CustomedMenuItem("return",
-				R.drawable.all_apps_button_icon));
-		menuItems.add(new CustomedMenuItem("return",
-				R.drawable.all_apps_button_icon));
-		menuItems.add(new CustomedMenuItem("return",
-				R.drawable.all_apps_button_icon));
-		menuItems.add(new CustomedMenuItem("return",
-				R.drawable.all_apps_button_icon));
-		menuItems.add(new CustomedMenuItem("return",
-				R.drawable.all_apps_button_icon));
-		menuItems.add(new CustomedMenuItem("return",
-				R.drawable.all_apps_button_icon));
+		menuItems.add(new CustomedMenuItem("Edit Screen",
+				R.drawable.menu_home_preview));
+		menuItems.add(new CustomedMenuItem("Launcher Theme",
+				R.drawable.menu_launcher_theme));
+		menuItems.add(new CustomedMenuItem("Wallpaper",
+				R.drawable.menu_wallpaper));
+		menuItems.add(new CustomedMenuItem("Manage Apps",
+				R.drawable.menu_manage_apps));
+		menuItems.add(new CustomedMenuItem("System Settings",
+				R.drawable.menu_system_settings));
+		menuItems.add(new CustomedMenuItem("Launcher Settings",
+				R.drawable.menu_launcher_settings));
 		
 		customedMenu.dataUpdate();
 		
