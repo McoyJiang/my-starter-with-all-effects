@@ -26,11 +26,11 @@
             android:defaultValue="0"/>
         
         <!-- mcoy add for theme settings begin -->
-        <Preference
+        <!-- <Preference
             android:key="theme_settings"
             android:title="@string/mylauncher_theme_settings">
         <intent android:targetPackage="com.android.Mylauncher"
                 android:targetClass="com.android.Mylauncher2.ThemeSettingsActivity" />
+                </Preference> -->
         <!-- mcoy add end -->
-    </Preference>
 </PreferenceScreen>

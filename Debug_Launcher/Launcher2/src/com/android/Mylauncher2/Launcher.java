@@ -494,10 +494,39 @@ public final class Launcher extends Activity
 			@Override
 			public void onItemClick(AdapterView<?> parents, View view, int position,
 					long id) {
+				Log.e(TAG, "the position is " + position);
 				menuDismiss();
 				switch (position) {
-				case 0:
-					finish();
+				case CustomedMenu.MENU_ITEM_EDIT_SCREEN:
+					startHomeEdit();
+					break;
+				case CustomedMenu.MENU_ITEM_LAUNCHER_THEME:
+					Intent themeSettings = new Intent(getApplicationContext(), ThemeSettingsActivity.class);
+					themeSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+			        		| Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+			        startActivity(themeSettings);
+					break;
+				case CustomedMenu.MENU_ITEM_WALLPAPER:
+					startWallpaper();
+					break;
+				case CustomedMenu.MENU_ITEM_MANAGER_APPS:
+			        Intent manageApps = new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS);
+			        manageApps.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+			                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+			        startActivity(manageApps);
+					break;
+				case CustomedMenu.MENU_ITEM_SYSTEM_SETTINGS:
+			        Intent settings = new Intent(android.provider.Settings.ACTION_SETTINGS);
+			        settings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+			                | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+			        startActivity(settings);
+					break;
+				case CustomedMenu.MENU_ITEM_LAUNCHER_SETTINGS:
+					Intent effectSettings = new Intent(getApplicationContext(), EffectSettings.class);
+			        //effectSettings.setClass(getApplicationContext(), EffectSettings.class);
+			        effectSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+			        		| Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+			        startActivity(effectSettings);
 					break;
 				} 
 			}

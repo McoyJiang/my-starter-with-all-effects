@@ -29,6 +29,13 @@ public class CustomedMenu extends PopupWindow {
     
 	private View view;
 	
+	public static final int MENU_ITEM_EDIT_SCREEN = 0;
+	public static final int MENU_ITEM_LAUNCHER_THEME = 1;
+	public static final int MENU_ITEM_WALLPAPER = 2;
+	public static final int MENU_ITEM_MANAGER_APPS = 3;
+	public static final int MENU_ITEM_SYSTEM_SETTINGS = 4;
+	public static final int MENU_ITEM_LAUNCHER_SETTINGS = 5;
+	
     /**
      * @param activity
      * @param menus
