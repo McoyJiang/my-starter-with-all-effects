@@ -501,7 +501,8 @@ public final class Launcher extends Activity
 					startHomeEdit();
 					break;
 				case CustomedMenu.MENU_ITEM_LAUNCHER_THEME:
-					Intent themeSettings = new Intent(getApplicationContext(), ThemeSettingsActivity.class);
+					//Intent themeSettings = new Intent(getApplicationContext(), ThemeSettingsActivity.class);
+					Intent themeSettings = new Intent(getApplicationContext(), ThemeSettings.class);
 					themeSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
 			        		| Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 			        startActivity(themeSettings);

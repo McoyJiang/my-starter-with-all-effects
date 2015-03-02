@@ -112,6 +112,11 @@
             android:name="com.android.Mylauncher2.ThemeSettingsActivity"
             android:label="@string/mylauncher_theme_settings">
         </activity>
+        
+        <activity 
+            android:name="com.android.Mylauncher2.ThemeSettings"
+            android:label="@string/mylauncher_theme_settings">
+        </activity>
         <activity
             android:name="com.android.Mylauncher2.DefaultThemeActivity"
             android:label="@string/default_theme_label" >
