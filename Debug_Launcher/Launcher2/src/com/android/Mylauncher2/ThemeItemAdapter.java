@@ -60,7 +60,10 @@ public class ThemeItemAdapter extends BaseAdapter {
         holder.ivIcon.setImageDrawable(allThemeApps.get(position).getImageId());
         holder.tvTitle.setText(allThemeApps.get(position).getTitle());
         if(allThemeApps.get(position).isCurrentTheme()) {
-        	holder.tvTitle.setTextColor(Color.parseColor("#669900"));
+        	//holder.tvTitle.setTextColor(Color.parseColor("#669900"));
+        	//convertView.setBackgroundResource(Color.parseColor("#669900"));
+        	//convertView.setBackgroundColor(Color.parseColor("#669900"));
+        	convertView.setBackgroundResource(R.drawable.selected_theme_bg);
         }
     	return convertView;
 	}
