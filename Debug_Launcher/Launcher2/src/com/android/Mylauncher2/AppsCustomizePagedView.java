@@ -1612,13 +1612,13 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         cancelAllTasks();
 
         Context context = getContext();
-        for (int j = 0; j < mNumWidgetPages; ++j) {
+        /**for (int j = 0; j < mNumWidgetPages; ++j) {
             PagedViewGridLayout layout = new PagedViewGridLayout(context, mWidgetCountX,
                     mWidgetCountY);
             setupPage(layout);
             addView(layout, new PagedView.LayoutParams(LayoutParams.MATCH_PARENT,
                     LayoutParams.MATCH_PARENT));
-        }
+        }*/
 
         for (int i = 0; i < mNumAppsPages; ++i) {
             PagedViewCellLayout layout = new PagedViewCellLayout(context);

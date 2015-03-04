@@ -126,7 +126,7 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
         tabView = (TextView) mLayoutInflater.inflate(R.layout.tab_widget_indicator, tabs, false);
         tabView.setText(label);
         tabView.setContentDescription(label);
-        addTab(newTabSpec(WIDGETS_TAB_TAG).setIndicator(tabView).setContent(contentFactory));
+        //addTab(newTabSpec(WIDGETS_TAB_TAG).setIndicator(tabView).setContent(contentFactory)); 
         setOnTabChangedListener(this);
 
         // Setup the key listener to jump between the last tab view and the market icon
@@ -138,6 +138,8 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
 
         // Hide the tab bar until we measure
         mTabsContainer.setAlpha(0f);
+        
+        mTabsContainer.setVisibility(View.GONE);
     }
 
     @Override
