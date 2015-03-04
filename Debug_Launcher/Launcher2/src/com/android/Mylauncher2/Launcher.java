@@ -90,6 +90,23 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Advanceable;
+//mcoy add for quick shortcut begin
+import android.annotation.SuppressLint;
+import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap.Config;
+import android.graphics.BitmapShader;
+import android.graphics.Matrix;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.view.View.OnTouchListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.HorizontalScrollView;
+import android.widget.GridView;
+import android.widget.PopupWindow;
+import android.graphics.Shader;
+//mcoy add end
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -455,6 +472,11 @@ public final class Launcher extends Activity
 
         IntentFilter filter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         registerReceiver(mCloseSystemDialogsReceiver, filter);
+        
+        //mcoy add for quick add shortcut begin
+        filter = new IntentFilter("com.dewav.SHORTCUT_INSTALLED");
+		registerReceiver(mShortcutInstalledReceiver, filter);
+        //mcoy add end
 
         updateGlobalIcons();
 
@@ -474,14 +496,14 @@ public final class Launcher extends Activity
 		
 		customedMenu = new CustomedMenu(this, menuItems);
 		
+		menuItems.add(new CustomedMenuItem("Add Shortcut",
+				R.drawable.menu_add));
 		menuItems.add(new CustomedMenuItem("Edit Screen",
 				R.drawable.menu_home_preview));
 		menuItems.add(new CustomedMenuItem("Launcher Theme",
 				R.drawable.menu_launcher_theme));
 		menuItems.add(new CustomedMenuItem("Wallpaper",
 				R.drawable.menu_wallpaper));
-		menuItems.add(new CustomedMenuItem("Manage Apps",
-				R.drawable.menu_manage_apps));
 		menuItems.add(new CustomedMenuItem("System Settings",
 				R.drawable.menu_system_settings));
 		menuItems.add(new CustomedMenuItem("Launcher Settings",
@@ -497,6 +519,9 @@ public final class Launcher extends Activity
 				Log.e(TAG, "the position is " + position);
 				menuDismiss();
 				switch (position) {
+				case CustomedMenu.MENU_ADD:
+					showPreviews();
+					break;
 				case CustomedMenu.MENU_ITEM_EDIT_SCREEN:
 					startHomeEdit();
 					break;
@@ -509,12 +534,6 @@ public final class Launcher extends Activity
 					break;
 				case CustomedMenu.MENU_ITEM_WALLPAPER:
 					startWallpaper();
-					break;
-				case CustomedMenu.MENU_ITEM_MANAGER_APPS:
-			        Intent manageApps = new Intent(Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS);
-			        manageApps.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-			                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-			        startActivity(manageApps);
 					break;
 				case CustomedMenu.MENU_ITEM_SYSTEM_SETTINGS:
 			        Intent settings = new Intent(android.provider.Settings.ACTION_SETTINGS);
@@ -1054,6 +1073,8 @@ public final class Launcher extends Activity
         if (mHotseat != null) {
             mHotseat.setup(this);
         }
+        
+        sAnchor = (View)findViewById(R.id.sanchor);  //mcoy add for quick add shortcut
 
         //BEGIN: added by mcoy, add workspace preview
         Log.e(TAG, "before has " + mWorkspace.getChildCount() + " CellLayouts");
@@ -1154,6 +1175,8 @@ public final class Launcher extends Activity
         } else {
             Log.e(TAG, "Couldn't find ActivityInfo for selected application: " + data);
         }
+        
+        sendBroadcast(new Intent("com.dewav.SHORTCUT_INSTALLED"));  //mcoy add for quick add shortcut
     }
 
     /**
@@ -1212,6 +1235,8 @@ public final class Launcher extends Activity
             mWorkspace.addInScreen(view, container, screen, cellXY[0], cellXY[1], 1, 1,
                     isWorkspaceLocked());
         }
+        
+        sendBroadcast(new Intent("com.dewav.SHORTCUT_INSTALLED"));  //mcoy add for quick add shortcut
     }
 
     static int[] getSpanForWidget(Context context, ComponentName component, int minWidth,
@@ -1329,6 +1354,8 @@ public final class Launcher extends Activity
             addWidgetToAutoAdvanceIfNeeded(launcherInfo.hostView, appWidgetInfo);
         }
         resetAddInfo();
+        
+        sendBroadcast(new Intent("com.dewav.SHORTCUT_INSTALLED"));  //mcoy add for quick add shortcut
     }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -1534,6 +1561,11 @@ public final class Launcher extends Activity
                     				mHomeEditView.getPreviewAllPages());
                     	}
                     	//END
+                        
+                        //mcoy add for quick add shortcut begin
+                        dismissPreview(sAnchor);
+                        //mcoy add end
+                        
                         mWorkspace.moveToDefaultScreen(true);
                     }
 
@@ -1578,6 +1610,717 @@ public final class Launcher extends Activity
 
         }
     }
+    
+    //mcoy add begin
+    private View sAnchor;// add by mcoy
+	float quickShortcutScale, shortcutViewWidth, shortcutViewHeight;
+	LinearLayout preview;
+	HorizontalScrollView previewScroll;  //mcoy for bug 141764
+	Button quickAppsBtn;
+	Button quickShortcutsBtn;
+	Button quickWidgetsBtn;
+	
+	int[] mTargetCell = new int[2];
+	int span[] = new int[2];
+	
+	GridView quickAppsView, quickShortcutsView, quickWidgetsView;
+	
+	private static int mPreviewSelectedScreen;
+	
+	/**
+	 * mcoy add return apps list
+	 * @return
+	 */
+	private List<ResolveInfo>  getAppsList(){
+		PackageManager pm = this.getPackageManager();
+		Intent intent = new Intent(Intent.ACTION_MAIN, null);
+		intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+		List<ResolveInfo> list = new ArrayList<ResolveInfo>(); 
+        LauncherApplication app = ((LauncherApplication) getApplication());
+
+	    List<ResolveInfo> mAppsList = pm.queryIntentActivities(intent,
+			PackageManager.PERMISSION_GRANTED);
+
+	    list.clear();
+	    AllAppsList allAppsList = new AllAppsList(mIconCache);
+		for (ResolveInfo info : mAppsList) {
+			list.add(info);
+		}
+		return list;
+	}
+	
+	private void updatePreviews() {
+		if(shortcutViewWidth <= 0 || shortcutViewHeight <= 0){
+			return;
+		}
+		CellLayout ce = (CellLayout) mWorkspace.getChildAt(mPreviewSelectedScreen);
+		Log.e("JIANG", "mPreviewSelectedScreen="+mPreviewSelectedScreen+"  :  " + ce.getChildCount());
+		final Bitmap bitmap = Bitmap.createBitmap((int) shortcutViewWidth, (int) shortcutViewHeight,
+				Bitmap.Config.ARGB_8888);
+
+		final Canvas c = new Canvas(bitmap);
+		c.scale(quickShortcutScale, quickShortcutScale);
+		c.translate(-ce.getPaddingLeft(), -ce.getPaddingTop());
+		ce.draw(c);
+
+		((ImageView) preview.getChildAt(mPreviewSelectedScreen)).setImageBitmap(bitmap);
+		preview.invalidate();
+	}
+	
+    /**
+     * mcoy add for add shortcut view 
+     */
+    private void showPreviews() {
+		showPreviews(/*mHotseat sAnchor*/sAnchor, 0, mWorkspace.getChildCount());
+	}
+    
+    @SuppressWarnings({ "unchecked" })
+	private void dismissPreview(final View v) {
+		final PopupWindow window = (PopupWindow) v.getTag();
+		if (window != null) {
+			window.setOnDismissListener(new PopupWindow.OnDismissListener() {
+				public void onDismiss() {
+					ViewGroup group = (ViewGroup) v.getTag(R.id.workspace);
+					int count = group.getChildCount();
+					for (int i = 0; i < count; i++) {
+						((ImageView) group.getChildAt(i))
+								.setImageDrawable(null);
+					}
+					// Segon change R.id.app_icon to R.id.qsb_divider
+					ArrayList<Bitmap> bitmaps = (ArrayList<Bitmap>) v
+							.getTag(R.id.qsb_divider);
+					for (Bitmap bitmap : bitmaps)
+						bitmap.recycle();
+
+					v.setTag(R.id.workspace, null);
+					// Segon change R.id.app_icon to R.id.qsb_divider
+					v.setTag(R.id.qsb_divider, null);
+					window.setOnDismissListener(null);
+				}
+			});
+			window.dismiss();
+		}
+		v.setTag(null);
+	}
+    
+    @SuppressLint("ResourceAsColor")
+	private void showPreviews(final View anchor, int start, int end) {
+		Log.e("JIANG", "showPreviews");
+		final Resources resources = getResources();
+		final Workspace workspace = mWorkspace;
+
+		CellLayout cell = ((CellLayout) workspace.getChildAt(start));
+
+		int width = cell.getWidth();
+		int height = cell.getHeight();
+		int x = cell.getPaddingLeft();
+		int y = cell.getPaddingTop();
+		width -= (x + cell.getPaddingRight());
+		height -= (y + cell.getPaddingBottom());
+
+//		scale = w / width;
+		quickShortcutScale = 0.33f;// add by samuel
+
+		int count = end - start;
+
+		shortcutViewWidth = width * quickShortcutScale;
+		shortcutViewHeight = height * quickShortcutScale;
+
+		LinearLayout layout = (LinearLayout) this.getLayoutInflater().inflate(
+				R.layout.quick_shortcuts, null);
+		previewScroll = (HorizontalScrollView) layout.findViewById(R.id.previews_scroll);  //mcoy for bug 141764
+		preview = (LinearLayout) layout.findViewById(R.id.shortcut_previews);
+
+		quickAppsBtn = (Button)layout.findViewById(R.id.quickAppsBtn);
+		quickShortcutsBtn = (Button)layout.findViewById(R.id.quickShortcutsBtn);
+		quickWidgetsBtn = (Button)layout.findViewById(R.id.quickWidgetsBtn);
+		quickAppsBtn.setOnTouchListener(new OnTouchListener(){
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				quickWidgetsBtn.setBackgroundResource(R.drawable.tab_unselected_holo);
+				quickShortcutsBtn.setBackgroundColor(android.R.color.transparent);
+				quickWidgetsBtn.setBackgroundColor(android.R.color.transparent);
+				quickAppsView.setVisibility(View.VISIBLE);
+				quickShortcutsView.setVisibility(View.GONE);
+				quickWidgetsView.setVisibility(View.GONE);
+				return true;
+			}
+			});
+		
+		quickShortcutsBtn.setOnTouchListener(new OnTouchListener(){
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				quickAppsBtn.setBackgroundColor(android.R.color.transparent);
+				quickShortcutsBtn.setBackgroundResource(R.drawable.tab_unselected_holo);
+				quickWidgetsBtn.setBackgroundColor(android.R.color.transparent);
+				quickAppsView.setVisibility(View.GONE);
+				quickShortcutsView.setVisibility(View.VISIBLE);
+				quickWidgetsView.setVisibility(View.GONE);
+				return true;
+			}
+			});
+		
+		quickWidgetsBtn.setOnTouchListener(new OnTouchListener(){
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				quickAppsBtn.setBackgroundColor(android.R.color.transparent);
+				quickShortcutsBtn.setBackgroundColor(android.R.color.transparent);
+				quickWidgetsBtn.setBackgroundResource(R.drawable.tab_unselected_holo);
+				quickAppsView.setVisibility(View.GONE);
+				quickShortcutsView.setVisibility(View.GONE);
+				quickWidgetsView.setVisibility(View.VISIBLE);
+				return true;
+			}
+			});
+		
+		//apps
+		final List<ResolveInfo> list = getAppsList(); 
+
+		quickAppsView = (GridView) layout.findViewById(R.id.quickAppsView);
+		quickAppsView.setNumColumns(4);
+		quickAppsView.setClickable(true);
+		quickAppsView.setOnItemClickListener(new OnItemClickListener(){
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				ResolveInfo res = list.get(position);
+			    CellLayout layout = (CellLayout) workspace.getChildAt(mPreviewSelectedScreen);
+			    if(!layout.findCellForSpan(mTargetCell, 1, 1)){
+			    	showOutOfSpaceMessage(isHotseatLayout(layout));
+			        return;
+			    }
+			    quickAddApps(res);
+			}});
+
+		quickAppsView.setAdapter(new AppsAdapter(this, list));
+		//apps .
+		
+		//TODO shortcuts
+        Intent shortcutsIntent = new Intent(Intent.ACTION_CREATE_SHORTCUT);
+        final List<ResolveInfo> shortcutsList = this.getPackageManager().queryIntentActivities(shortcutsIntent, 0);
+        quickShortcutsView = (GridView) layout.findViewById(R.id.quickShortcutsView);
+        quickShortcutsView.setNumColumns(4);
+        quickShortcutsView.setClickable(true);
+        quickShortcutsView.setOnItemClickListener(new OnItemClickListener(){
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				ResolveInfo info = shortcutsList.get(position);				
+				String packageName = info.activityInfo.packageName;
+				String className = info.activityInfo.name;
+			    ComponentName comp = new ComponentName(packageName, className);
+			    CellLayout layout = (CellLayout) workspace.getChildAt(mPreviewSelectedScreen);
+			    if(!layout.findCellForSpan(mTargetCell, 1, 1)){
+			    	showOutOfSpaceMessage(isHotseatLayout(layout));
+			        return;
+			    }
+				processShortcutFromDrop(comp,
+						LauncherSettings.Favorites.CONTAINER_DESKTOP, mPreviewSelectedScreen, mTargetCell, null);
+			}});
+
+        quickShortcutsView.setAdapter(new AppsAdapter(this, shortcutsList));
+        
+		//shortcuts. 
+		
+		//widgets
+        final List<AppWidgetProviderInfo> widgetsList =
+                AppWidgetManager.getInstance(this).getInstalledProviders();
+        quickWidgetsView = (GridView) layout.findViewById(R.id.quickWidgetsView);
+        quickWidgetsView.setNumColumns(2);
+        quickWidgetsView.setClickable(true);
+        quickWidgetsView.setAdapter(new WidgetsAdapter2(this, widgetsList));
+		
+        quickWidgetsView.setOnItemClickListener(new OnItemClickListener(){
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				AppWidgetProviderInfo info = widgetsList.get(position);	
+				final PendingAddWidgetInfo createItemInfo = new PendingAddWidgetInfo(info, null, null);
+	            int[] spanXY = Launcher.getSpanForWidget(Launcher.this, info);
+	            createItemInfo.spanX = spanXY[0];
+	            createItemInfo.spanY = spanXY[1];
+	            int[] minSpanXY = Launcher.getMinSpanForWidget(Launcher.this, info);
+	            createItemInfo.minSpanX = minSpanXY[0];
+	            createItemInfo.minSpanY = minSpanXY[1];
+
+			      int span[] = new int[2];
+                  span[0] = createItemInfo.spanX;
+                  span[1] = createItemInfo.spanY;
+                  CellLayout layout = (CellLayout) mWorkspace.getChildAt(mPreviewSelectedScreen);
+                  //if(!layout.findCellForSpan(mTargetCell, minSpanXY[0], minSpanXY[1])){   mcoy modify for [147334]
+                  if(!layout.findCellForSpan(mTargetCell, span[0], span[1])){
+                  	showOutOfSpaceMessage(isHotseatLayout(layout));
+                  	return ;
+                  }
+//                  mTargetCell = findNearestArea(0, 0, createItemInfo.spanX, createItemInfo.spanY,
+//                  		layout, mTargetCell);
+                  
+				addAppWidgetFromDrop((PendingAddWidgetInfo) createItemInfo,
+						LauncherSettings.Favorites.CONTAINER_DESKTOP, mPreviewSelectedScreen, mTargetCell, span, null);
+			}
+
+			private int[] findNearestArea(int pixelX, int pixelY, int spanX, int spanY,
+					CellLayout layout, int[] recycle) {
+		        return layout.findNearestArea(
+		                pixelX, pixelY, spanX, spanY, recycle);
+			}});
+
+		
+		/*
+		LinearLayout widgets = (LinearLayout) layout.findViewById(R.id.widgets);
+		widgets.setBackgroundColor(Color.BLUE);
+		for(AppWidgetProviderInfo info : widgetsList){
+			PagedViewWidget widget = (PagedViewWidget) this.getLayoutInflater().inflate(
+	                R.layout.apps_customize_widget, null, false);
+			final PendingAddWidgetInfo createItemInfo = new PendingAddWidgetInfo(info, null, null);
+            // Determine the widget spans and min resize spans.
+            int[] spanXY = Launcher.getSpanForWidget(this, info);
+            createItemInfo.spanX = spanXY[0];
+            createItemInfo.spanY = spanXY[1];
+            int[] minSpanXY = Launcher.getMinSpanForWidget(this, info);
+            createItemInfo.minSpanX = minSpanXY[0];
+            createItemInfo.minSpanY = minSpanXY[1];
+
+            widget.applyFromAppWidgetProviderInfo(info, -1, spanXY);
+            widget.setTag(createItemInfo);
+//            widget.applyPreview(new FastBitmapDrawable(drawableToBitamp(drawable)), 0);
+            widgets.addView(widget);
+            
+            widget.setOnTouchListener(new OnTouchListener(){
+            	private int[] mTargetCell = new int[2];
+
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+					if(event.getAction()==MotionEvent.ACTION_UP){
+						//mcoy
+					      int span[] = new int[2];
+	                        span[0] = createItemInfo.spanX;
+	                        span[1] = createItemInfo.spanY;
+	                        mTargetCell = findNearestArea(0, 0, createItemInfo.spanX, createItemInfo.spanY,
+	                        		(CellLayout) workspace.getChildAt(mPreviewSelectedScreen), mTargetCell);
+	                        
+						addAppWidgetFromDrop((PendingAddWidgetInfo) createItemInfo,
+								LauncherSettings.Favorites.CONTAINER_DESKTOP, mPreviewSelectedScreen, mTargetCell, span, null);
+						return true;
+					}
+					return false;
+				}
+
+				    private int[] findNearestArea(int pixelX, int pixelY,
+            int spanX, int spanY, CellLayout layout, int[] recycle) {
+        return layout.findNearestArea(
+                pixelX, pixelY, spanX, spanY, recycle);
+    }
+				});
+		}
+		*/
+		//widgets. 
+		
+		//home pages
+		PreviewTouchHandler handler = new PreviewTouchHandler(anchor);
+		ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>(count);
+		mPreviewSelectedScreen = mWorkspace.getCurrentPage();
+		for (int i = start; i < end; i++) {
+			ImageView image = new ImageView(this);
+			cell = (CellLayout) workspace.getChildAt(i);
+			Log.e("JIANG", "" + cell.getChildCount());
+			final Bitmap bitmap = Bitmap.createBitmap((int) shortcutViewWidth,
+					(int) shortcutViewHeight, Bitmap.Config.ARGB_8888);
+
+			final Canvas c = new Canvas(bitmap);
+			c.scale(quickShortcutScale, quickShortcutScale);
+			c.translate(-cell.getPaddingLeft(), -cell.getPaddingTop());
+			cell.draw(c);
+			
+			if(i == mWorkspace.getCurrentPage()){
+				image.setBackgroundResource(R.drawable.preview_bg_focus);
+			}else{
+				image.setBackgroundResource(R.drawable.preview_bg);
+			}
+			
+			image.setImageBitmap(bitmap);
+			image.setTag(i);
+			image.setOnClickListener(handler);
+			image.setOnFocusChangeListener(handler);
+			image.setFocusable(true);
+			if (i == mWorkspace.getCurrentPage())
+				image.requestFocus();
+
+			preview.addView(image, LinearLayout.LayoutParams.WRAP_CONTENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT);
+
+			bitmaps.add(bitmap);
+		}
+		//home pages .
+		//preview.scrollTo((mPreviewSelectedScreen-1)* 170, 0);  //deleted by mcoy as to bug 141764
+		final PopupWindow p = new PopupWindow(this);
+		p.setContentView(layout);
+		p.setHeight(getWindowManager().getDefaultDisplay().getHeight());
+		p.setWidth(getWindowManager().getDefaultDisplay().getWidth());
+		p.setAnimationStyle(R.style.AnimationPreview);
+		p.setOutsideTouchable(true);
+		p.setFocusable(true);
+		p.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+		p.showAsDropDown(anchor, 0, 0);
+
+		p.setOnDismissListener(new PopupWindow.OnDismissListener() {
+			public void onDismiss() {
+				dismissPreview(anchor);
+			}
+		});
+
+		anchor.setTag(p);
+		anchor.setTag(R.id.workspace, preview);
+		// Segon change R.id.app_icon to R.id.qsb_divider
+		anchor.setTag(R.id.qsb_divider, bitmaps);
+		//mcoy for bug 141764
+		mHandler.postDelayed((new Runnable() { 
+			@Override 
+			public void run() { 
+				previewScroll.scrollTo((mPreviewSelectedScreen-1)* 170, 0);
+			}
+		}),5);
+	}
+    
+    private void quickAddApps(ResolveInfo resInfo){
+		String packageName = resInfo.activityInfo.packageName;
+		String className = resInfo.activityInfo.name;
+	    ComponentName comp = new ComponentName(packageName, className);  
+		
+		 CellLayout layout = (CellLayout) mWorkspace.getChildAt(mPreviewSelectedScreen);
+		  if(!layout.findCellForSpan(mTargetCell, 1, 1)){
+			  showOutOfSpaceMessage(isHotseatLayout(layout));
+		  return;
+		  }
+		    
+		  completeAddApplication(new Intent(Intent.ACTION_MAIN).setComponent(comp), LauncherSettings.Favorites.CONTAINER_DESKTOP, 
+		    		mPreviewSelectedScreen, mTargetCell[0], mTargetCell[1]);
+	}
+    
+	class PreviewTouchHandler implements View.OnClickListener, Runnable,
+			View.OnFocusChangeListener {
+		private final View mAnchor;
+
+		public PreviewTouchHandler(View anchor) {
+			mAnchor = anchor;
+		}
+
+		public void onClick(View v) {
+//			mWorkspace.snapToScreen((Integer) v.getTag());
+//			v.post(this);
+			mPreviewSelectedScreen = (Integer) v.getTag();
+			
+			for(int i=0; i<preview.getChildCount();i++){
+				if(i == mPreviewSelectedScreen){
+					((ImageView)preview.getChildAt(i)).setBackgroundResource(R.drawable.preview_bg_focus);
+				}else{
+					((ImageView)preview.getChildAt(i)).setBackgroundResource(R.drawable.preview_bg);
+				}
+			}
+		}
+
+		public void run() {
+//			dismissPreview(mAnchor);
+		}
+
+		public void onFocusChange(View v, boolean hasFocus) {
+			if (hasFocus) {
+//				mWorkspace.snapToScreen((Integer) v.getTag());
+				mPreviewSelectedScreen = (Integer) v.getTag();
+				for(int i=0; i<preview.getChildCount();i++){
+					if(i == mPreviewSelectedScreen){
+						((ImageView)preview.getChildAt(i)).setBackgroundResource(R.drawable.preview_bg_focus);
+					}else{
+						((ImageView)preview.getChildAt(i)).setBackgroundResource(R.drawable.preview_bg);
+					}
+				}
+			}
+		}
+	}
+	
+	// add by samuel:@{
+    CanvasCache mCachedAppWidgetPreviewCanvas = new CanvasCache();
+    RectCache mCachedAppWidgetPreviewSrcRect = new RectCache();
+    RectCache mCachedAppWidgetPreviewDestRect = new RectCache();
+    PaintCache mCachedAppWidgetPreviewPaint = new PaintCache();
+    private int sAppIconSize;
+    private final float sWidgetPreviewIconPaddingPercentage = 0.25f;
+    
+    private Bitmap getWidgetPreview(ComponentName provider, int previewImage,
+            int iconId, int cellHSpan, int cellVSpan, int maxWidth,
+            int maxHeight) {
+    	PackageManager sPackageManager = getPackageManager();
+    	sAppIconSize = getResources().getDimensionPixelSize(R.dimen.app_icon_size);
+        // Load the preview image if possible
+        String packageName = provider.getPackageName();
+        ///M:maxWidth & maxHeight maybe zero which can lead to createBitmap JE
+        if (maxWidth <= 0) {
+            Log.w(TAG, "getWidgetPreview packageName=" + packageName +", maxWidth:" + maxWidth);
+            maxWidth = Integer.MAX_VALUE;
+        }
+        if (maxHeight <= 0) {
+            Log.w(TAG, "getWidgetPreview packageName=" + packageName +", maxHeight:" + maxHeight);
+            maxHeight = Integer.MAX_VALUE;
+        }
+
+        Drawable drawable = null;
+        if (previewImage != 0) {
+            drawable = sPackageManager.getDrawable(packageName, previewImage, null);
+            if (drawable == null) {
+                Log.w(TAG, "Can't load widget preview drawable 0x" +
+                        Integer.toHexString(previewImage) + " for provider: " + provider);
+            }
+        }
+
+        ///M: initialized to 0 for build pass
+        int bitmapWidth = 0;
+        int bitmapHeight = 0;
+        Bitmap defaultPreview = null;
+        boolean widgetPreviewExists = (drawable != null);
+        ///M:getIntrinsicWidth & getIntrinsicHeight maybe return -1 which can lead to createBitmap JE
+        boolean useWidgetPreview = false;
+        if (widgetPreviewExists) {
+            bitmapWidth = drawable.getIntrinsicWidth();
+            bitmapHeight = drawable.getIntrinsicHeight();
+            if ((bitmapWidth <= 0) || (bitmapHeight <= 0)) {
+                Log.w(TAG, "getWidgetPreview packageName=" + packageName +", getIntrinsicWidth():" +
+                        bitmapWidth + ", getIntrinsicHeight(): " + bitmapHeight);
+            } else {
+                useWidgetPreview = true;
+            }
+        } 
+
+        if (useWidgetPreview == false) {
+            // Generate a preview image if we couldn't load one
+            if (cellHSpan < 1) cellHSpan = 1;
+            if (cellVSpan < 1) cellVSpan = 1;
+
+            BitmapDrawable previewDrawable = (BitmapDrawable) getResources()
+                    .getDrawable(R.drawable.widget_preview_tile);
+            final int previewDrawableWidth = previewDrawable
+                    .getIntrinsicWidth();
+            final int previewDrawableHeight = previewDrawable
+                    .getIntrinsicHeight();
+            bitmapWidth = previewDrawableWidth * cellHSpan; // subtract 2 dips
+            bitmapHeight = previewDrawableHeight * cellVSpan;
+
+            defaultPreview = Bitmap.createBitmap(bitmapWidth, bitmapHeight,
+                    Config.ARGB_8888);
+            final Canvas c = mCachedAppWidgetPreviewCanvas.get();
+            c.setBitmap(defaultPreview);
+            previewDrawable.setBounds(0, 0, bitmapWidth, bitmapHeight);
+
+            /**
+             * M: Since the previous setTileModeXY function creates shader and paint which shared by many preview bitmaps,
+             * native exception happens in libskia.so because race condition between multi-thread. We create fresh new
+             * objects to avoid this, but will need allocate more memory than before. @{
+             */
+            final Bitmap previewBitmap = previewDrawable.getBitmap();
+            final BitmapShader shader = new BitmapShader(previewBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+            final Paint shaderPaint = new Paint();
+            shaderPaint.setShader(shader);
+            c.drawPaint(shaderPaint);
+            /** @} */
+
+            c.setBitmap(null);
+
+            // Draw the icon in the top left corner
+            int minOffset = (int) (sAppIconSize * sWidgetPreviewIconPaddingPercentage);
+            int smallestSide = Math.min(bitmapWidth, bitmapHeight);
+            float iconScale = Math.min((float) smallestSide
+                    / (sAppIconSize + 2 * minOffset), 1f);
+
+            try {
+                Drawable icon = null;
+                int hoffset =
+                        (int) ((previewDrawableWidth - sAppIconSize * iconScale) / 2);
+                int yoffset =
+                        (int) ((previewDrawableHeight - sAppIconSize * iconScale) / 2);
+                if (iconId > 0) {
+                    icon = mIconCache.getFullResIcon(packageName, iconId);
+                }
+                if (icon != null) {
+                    renderDrawableToBitmap(icon, defaultPreview, hoffset,
+                            yoffset, (int) (sAppIconSize * iconScale),
+                            (int) (sAppIconSize * iconScale));
+                }
+            } catch (Resources.NotFoundException e) {
+            }
+        }
+
+        // Scale to fit width only - let the widget preview be clipped in the
+        // vertical dimension
+        float scale = 1f;
+        if (bitmapWidth > maxWidth) {
+            scale = maxWidth / (float) bitmapWidth;
+        }
+		//mcoy
+		if(bitmapHeight * scale > maxHeight){
+			scale = maxHeight/(float)bitmapHeight;
+            if (scale > 0.1f) scale -= 0.1f;
+		}
+		//mcoy .
+        if (scale != 1f) {
+            bitmapWidth = (int) (scale * bitmapWidth);
+            bitmapHeight = (int) (scale * bitmapHeight);
+        }
+
+        Bitmap preview = Bitmap.createBitmap(bitmapWidth, bitmapHeight,
+                Config.ARGB_8888);
+
+        // Draw the scaled preview into the final bitmap
+        if (widgetPreviewExists) {
+            renderDrawableToBitmap(drawable, preview, 0, 0, bitmapWidth,
+                    bitmapHeight);
+        } else {
+            final Canvas c = mCachedAppWidgetPreviewCanvas.get();
+            final Rect src = mCachedAppWidgetPreviewSrcRect.get();
+            final Rect dest = mCachedAppWidgetPreviewDestRect.get();
+            c.setBitmap(preview);
+            src.set(0, 0, defaultPreview.getWidth(), defaultPreview.getHeight());
+            dest.set(0, 0, preview.getWidth(), preview.getHeight());
+
+            Paint p = mCachedAppWidgetPreviewPaint.get();
+            if (p == null) {
+                p = new Paint();
+                p.setFilterBitmap(true);
+                mCachedAppWidgetPreviewPaint.set(p);
+            }
+            c.drawBitmap(defaultPreview, src, dest, p);
+            c.setBitmap(null);
+        }
+        return preview;
+    }
+    private void renderDrawableToBitmap(Drawable d, Bitmap bitmap, int x, int y, int w, int h,
+            float scale) {
+        if (bitmap != null) {
+            Canvas c = new Canvas(bitmap);
+            c.scale(scale, scale);
+            Rect oldBounds = d.copyBounds();
+            d.setBounds(x, y, x + w, y + h);
+            d.draw(c);
+            d.setBounds(oldBounds); // Restore the bounds
+            c.setBitmap(null);
+        }
+    }
+    private void renderDrawableToBitmap(Drawable d, Bitmap bitmap, int x, int y, int w, int h) {
+        renderDrawableToBitmap(d, bitmap, x, y, w, h, 1f);
+    }
+    
+    private Drawable zoomDrawable(Drawable drawable, int w, int h) {
+	    int width = drawable.getIntrinsicWidth();  
+	    int height = drawable.getIntrinsicHeight();  
+	    Bitmap oldbmp = drawableToBitmap(drawable);  
+	    Matrix matrix = new Matrix();  
+	    float scaleWidth = ((float) w / width);  
+	    float scaleHeight = ((float) h / height);  
+	    matrix.postScale(scaleWidth, scaleHeight);  
+	    Bitmap newbmp = Bitmap.createBitmap(oldbmp, 0, 0, width, height,  
+	            matrix, true);  
+//	    Bitmap newbmp = Utilities.createIconBitmap(drawable, this);
+	    return new BitmapDrawable(null, newbmp);  
+	} 
+    
+    private Bitmap drawableToBitmap(Drawable drawable) {  
+	    int width = drawable.getIntrinsicWidth();  
+	    int height = drawable.getIntrinsicHeight();  
+	    Bitmap.Config config = drawable.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888  
+	            : Bitmap.Config.RGB_565;  
+	    Bitmap bitmap = Bitmap.createBitmap(width, height, config);  
+	    Canvas canvas = new Canvas(bitmap);  
+	    drawable.setBounds(0, 0, width, height);  
+	    drawable.draw(canvas);  
+	    return bitmap;  
+	}  
+    
+    Handler mShortcutInstalledHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+		    	case 0:
+		    		updatePreviews();
+		            break;
+		        default:
+		            break;
+		        }
+		    super.handleMessage(msg);
+		}
+	};
+
+	private BroadcastReceiver mShortcutInstalledReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+//			Log.e("JIANG", "mShortcutInstalledReceiver");
+			mShortcutInstalledHandler.removeMessages(0);
+			mShortcutInstalledHandler.sendEmptyMessageDelayed(0,1000/2);
+//			updatePreviews();
+		}
+	};
+	
+    public class AppsAdapter extends ArrayAdapter<ResolveInfo> {
+		private final LayoutInflater mInflater;
+
+		public AppsAdapter(Context context, List<ResolveInfo> list) {
+			super(context, 0, list);
+			mInflater = LayoutInflater.from(context);
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			final ResolveInfo info = getItem(position);
+
+			if (convertView == null) {
+				convertView = mInflater.inflate(R.layout.application_boxed,
+						parent, false);
+			}
+
+			final TextView textView = (TextView) convertView;
+			Drawable icon = info.loadIcon(getPackageManager());
+			textView.setCompoundDrawablesWithIntrinsicBounds(null, zoomDrawable(icon,48,48), null,
+					null);
+			//textView.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
+			textView.setText(info.loadLabel(getPackageManager()));
+
+			return convertView;
+		}
+	}
+    
+	public class WidgetsAdapter2 extends ArrayAdapter<AppWidgetProviderInfo> {
+		private final LayoutInflater mInflater;
+
+		public WidgetsAdapter2(Context context, List<AppWidgetProviderInfo> list) {
+			super(context, 0, list);
+			mInflater = LayoutInflater.from(context);
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			final AppWidgetProviderInfo info = getItem(position);
+
+			if (convertView == null) {
+				convertView = mInflater.inflate(R.layout.application_boxed2,
+						parent, false);
+			}
+
+			final TextView textView = (TextView) convertView.findViewById(R.id.pre_img);
+			final TextView textViewLable = (TextView) convertView.findViewById(R.id.pre_name);
+//			Drawable icon = info.loadIcon(getPackageManager());
+            int[] cellSpans = Launcher.getSpanForWidget(Launcher.this, info);
+
+            Bitmap b = getWidgetPreview(info.provider, info.previewImage, info.icon,
+                    cellSpans[0], cellSpans[1], 200, 150);
+			BitmapDrawable bitmapDrawable = new BitmapDrawable(b);
+			
+			textView.setCompoundDrawablesWithIntrinsicBounds(null, /*zoomDrawable(bitmapDrawable,116,116)*/bitmapDrawable, null,
+					null);
+			textViewLable.setText(info.label);
+
+			return convertView;
+		}
+	}
+	// @}
+    //mcoy add end
 
 	//BEGIN: mcoy added for home edit preview
 	private HomeEditView mHomeEditView;
@@ -2191,6 +2934,8 @@ public final class Launcher extends Activity
                 startActivityForResult(intent, REQUEST_BIND_APPWIDGET);
             }
         }
+        
+        sendBroadcast(new Intent("com.dewav.SHORTCUT_INSTALLED"));  //mcoy add for quick add shortcut
     }
 
     void processShortcut(Intent intent) {
@@ -3824,6 +4569,8 @@ public final class Launcher extends Activity
         }
 
         workspace.requestLayout();
+        
+        sendBroadcast(new Intent("com.dewav.SHORTCUT_INSTALLED"));  //mcoy add for quick add shortcut
     }
 
     /**
@@ -3870,6 +4617,8 @@ public final class Launcher extends Activity
             Log.d(TAG, "bound widget id="+item.appWidgetId+" in "
                     + (SystemClock.uptimeMillis()-start) + "ms");
         }
+        
+        sendBroadcast(new Intent("com.dewav.SHORTCUT_INSTALLED"));  //mcoy add for quick add shortcut
     }
 
     public void onPageBoundSynchronously(int page) {
@@ -3931,6 +4680,8 @@ public final class Launcher extends Activity
         }
 
         mWorkspaceLoading = false;
+        
+        sendBroadcast(new Intent("com.dewav.SHORTCUT_INSTALLED"));  //mcoy add for quick add shortcut
     }
 
     private boolean canRunNewAppsAnimation() {

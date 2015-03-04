@@ -77,6 +77,12 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/button_bar_height_plus_padding"
         android:layout_gravity="bottom" />
+    
+    <View
+        android:id="@+id/sanchor"
+        android:layout_width="match_parent"
+        android:background="@android:color/transparent"
+        android:layout_height="1dp"/>
 
     <include
         android:id="@+id/qsb_bar"

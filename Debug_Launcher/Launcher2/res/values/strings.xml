@@ -297,4 +297,10 @@ s -->
 	<string name="preview_page_already_least">cannot delete more pages!</string>
 	<!-- END -->
 
+    <!-- mcoy add for quick shortcut begin -->
+    <string name="quick_apps">Apps</string>
+    <string name="quick_shortcuts">Shortcuts</string>
+    <string name="quick_widgets">Widgets</string>
+    <!-- mcoy add end -->
+
 </resources>

@@ -187,4 +187,9 @@
     </style>
     <style name="CustomClingText">
     </style>
+    
+    <style name="AnimationPreview">
+      <item name="android:windowEnterAnimation">@anim/fade_in_fast</item>
+      <item name="android:windowExitAnimation">@anim/fade_out_fast</item>
+    </style>
 </resources>
