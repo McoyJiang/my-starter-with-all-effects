@@ -45,11 +45,14 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.Mylauncher2.FolderIcon.FolderRingAnimator;
@@ -372,7 +375,58 @@ public class Workspace extends SmoothPagedView
         if (getImportantForAccessibility() == View.IMPORTANT_FOR_ACCESSIBILITY_AUTO) {
             setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
         }
+        
+        //mcoy add for workspace indicator begin
+        /**mLayoutBottom = (LinearLayout) mLauncher.findViewById(R.id.workspace_botton_moons);
+        if(mLayoutBottom == null) {
+        	Log.e("JIA", "null");
+        }
+        setCurPage(getCurrentPage());*/
+        //mcoy add end
     }
+    
+    //mcoy add for workspace indicator begin
+    private LinearLayout mLayoutBottom;
+    private ImageView imgCur[] = new ImageView[20];
+    
+    public void setCurPage(int page) {
+    	Log.e("JIA", "the page is " + page);
+        mLayoutBottom.removeAllViews();
+        if (getPageCount() > 1) {
+            for (int i = 0; i < getPageCount(); i++) {
+                imgCur[i] = new ImageView(getContext());
+                imgCur[i].setBackgroundResource(R.drawable.bg_img_item);
+                imgCur[i].setId(i);
+                imgCur[i].setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        for (int i = 0; i < getPageCount(); i++) {
+                            imgCur[i].setBackgroundResource(R.drawable.bg_img_item);
+                            if (i == v.getId()) {
+                                imgCur[i].setBackgroundResource(R.drawable.bg_img_item_true);
+                                snapToPage(i);
+                            }
+                        }
+                    }
+                });
+                // 判断当前页码来更新
+                if (imgCur[i].getId() == page) {
+                    imgCur[i].setBackgroundResource(R.drawable.bg_img_item_true);
+                }
+                mLayoutBottom.addView(imgCur[i]);
+            }
+        }
+    }
+    
+    public void showBottomLayout() {
+    	mLayoutBottom.setVisibility(View.VISIBLE);
+    }
+    
+	public void hideBottomLayout() {
+		mLayoutBottom.setVisibility(View.GONE);
+	}
+	//mcoy add end
 
     // estimate the size of a widget with spans hSpan, vSpan. return MAX_VALUE for each
     // dimension if unsuccessful
@@ -1193,6 +1247,9 @@ public class Workspace extends SmoothPagedView
     protected void snapToPage(int whichPage, int delta, int duration) {
     	Log.e("XIN", "mCurrentPage is " + mCurrentPage + " whichPage is " + whichPage);
     	super.snapToPage(whichPage, delta, duration);
+    	//mcoy add for workspace indicator begin
+    	setCurPage(whichPage);
+    	//mcoy add end
     	if(mLauncher.isMultiWallpaperEnabled()) {
     	    setBackgroundDrawable(new BitmapDrawable(mBitmaps.get(whichPage)));
     	}
@@ -3849,7 +3906,7 @@ public class Workspace extends SmoothPagedView
                 pixelX, pixelY, spanX, spanY, recycle);
     }
 
-    void setup(DragController dragController) {
+    void setup(Launcher launcher, DragController dragController) {
         mSpringLoadedDragController = new SpringLoadedDragController(mLauncher);
         mDragController = dragController;
 
@@ -3857,6 +3914,9 @@ public class Workspace extends SmoothPagedView
         // needed
         updateChildrenLayersEnabled(false);
         setWallpaperDimension();
+        
+        mLayoutBottom = (LinearLayout) launcher.findViewById(R.id.workspace_botton_moons);
+        setCurPage(getCurrentPage());
     }
 
     /**

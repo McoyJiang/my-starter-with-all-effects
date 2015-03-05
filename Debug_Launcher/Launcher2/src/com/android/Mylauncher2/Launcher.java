@@ -1094,7 +1094,7 @@ public final class Launcher extends Activity
         // Setup the workspace
         mWorkspace.setHapticFeedbackEnabled(false);
         mWorkspace.setOnLongClickListener(this);
-        mWorkspace.setup(dragController);
+        mWorkspace.setup(this, dragController);
         dragController.addDragListener(mWorkspace);
 
         // Get the search/delete bar
@@ -2333,28 +2333,6 @@ public final class Launcher extends Activity
 		
 		List<View> views = new ArrayList<View>();
 		for (int i = 0; i < mWorkspace.getChildCount(); i++) {
-			/**FrameLayout cellPreview  = (FrameLayout)mInflater.inflate(R.layout.preview_item, mHomeEditView, false);
-			ImageView imagePreview = (ImageView) cellPreview.findViewById(R.id.preview);
-			final ImageView imageHome = (ImageView) cellPreview.findViewById(R.id.home);
-			imageHome.setTag(i);
-			// 将当前已有的页面生成缩略图，放到HomeEditView中进行显示
-			CellLayout view = (CellLayout) mWorkspace.getChildAt(i);
-			Bitmap bitmap = Bitmap.createBitmap(view.getWidth(),
-					view.getHeight(), Bitmap.Config.ARGB_8888);
-			// 绘制
-			final Canvas c = new Canvas(bitmap);
-			// 设置比例
-			view.dispatchDraw(c);
-			
-			imagePreview.setScaleType(ImageView.ScaleType.FIT_CENTER);
-			imagePreview.setImageBitmap(bitmap);
-			if(i == mWorkspace.getDefaultHomePage()) {
-				imageHome.setImageResource(R.drawable.preview_home_btn_light);
-			} else {
-				imageHome.setImageResource(R.drawable.preview_home_btn);
-			}
-			imageHome.setOnClickListener(mPreviewHomeClickListener);
-			mImageHomes.add(imageHome); */
 			
 			FrameLayout cellPreview = createPreviewPage(i, true);
 			views.add(cellPreview);
@@ -2373,6 +2351,7 @@ public final class Launcher extends Activity
             public void onAnimationEnd(Animator animation) {
             	mHomeEditView.setBackgroundColor(Color.TRANSPARENT);
         		mHomeEditView.setVisibility(View.VISIBLE);
+        		mWorkspace.hideBottomLayout();
         		mWorkspace.setVisibility(View.INVISIBLE);
         		mHotseat.setVisibility(View.GONE);
         		mSearchDropTargetBar.setVisibility(View.GONE);
@@ -2476,10 +2455,11 @@ public final class Launcher extends Activity
 	
 	private void showWorkspaceFormHomePreview (int index, List<PageInfo> pages) {
 		mWorkspace.setVisibility(View.VISIBLE); 
+		mWorkspace.showBottomLayout();
 		mWorkspace.setAlpha(1f);
 		mHotseat.setVisibility(View.VISIBLE);
 		mSearchDropTargetBar.setVisibility(View.VISIBLE);
-		mDockDivider.setVisibility(View.VISIBLE);
+		mDockDivider.setVisibility(View.GONE);
 		mHomeEditView.setVisibility(View.GONE);
 		
 		mWorkspace.snapToPage(index);
@@ -3980,7 +3960,7 @@ public final class Launcher extends Activity
             }
 
             // We only need to animate in the dock divider if we're going from spring loaded mode
-            showDockDivider(animated && wasInSpringLoadedMode);
+            //showDockDivider(animated && wasInSpringLoadedMode);
 
             // Set focus to the AppsCustomize button
             if (mAllAppsButton != null) {
@@ -4157,10 +4137,12 @@ public final class Launcher extends Activity
     
     void showBottomLayout() {
     	mAppsCustomizeContent.showBottomLayout();
+    	mWorkspace.hideBottomLayout();
     }
     
     void hideBottomLayout(){
     	mAppsCustomizeContent.hideBottomLayout();
+    	mWorkspace.showBottomLayout();
     }
 
     /**

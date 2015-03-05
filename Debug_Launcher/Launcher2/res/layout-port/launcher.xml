@@ -71,6 +71,14 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_marginBottom="@dimen/button_bar_height" />
+    
+    <include
+        android:id="@+id/workspace_botton_moons"
+        layout="@layout/workspace_scroll_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|bottom"
+        android:layout_marginBottom="@dimen/button_bar_height" />
 
     <include layout="@layout/hotseat"
         android:id="@+id/hotseat"

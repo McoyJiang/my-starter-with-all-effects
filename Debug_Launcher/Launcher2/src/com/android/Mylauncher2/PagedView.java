@@ -1834,7 +1834,7 @@ public abstract class PagedView extends ViewGroup implements ViewGroup.OnHierarc
         if (mScrollIndicator != null) {
             // Fade the indicator in
             updateScrollingIndicatorPosition();
-            mScrollIndicator.setVisibility(View.VISIBLE);
+            mScrollIndicator.setVisibility(View.GONE);
             cancelScrollingIndicatorAnimations();
             if (immediately || mScrollingPaused) {
                 mScrollIndicator.setAlpha(1f);

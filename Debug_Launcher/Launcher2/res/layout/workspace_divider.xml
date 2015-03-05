@@ -20,4 +20,5 @@
     android:paddingTop="@dimen/workspace_divider_padding_top"
     android:paddingBottom="@dimen/workspace_divider_padding_bottom"
     android:scaleType="fitXY"
+    android:visibility="gone"
     android:src="@drawable/hotseat_track_holo" />
