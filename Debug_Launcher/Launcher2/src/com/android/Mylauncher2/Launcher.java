@@ -30,6 +30,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.SearchManager;
+import android.app.WallpaperManager;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProviderInfo;
@@ -382,7 +383,8 @@ public final class Launcher extends Activity
         }
     }
 
-    @Override
+    @SuppressLint("ServiceCast")
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
         if (DEBUG_STRICT_MODE) {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
@@ -484,6 +486,13 @@ public final class Launcher extends Activity
         unlockScreenOrientation(true);
         
         buildMenu();  // mcoy add for self-defined menu
+        
+		WallpaperManager wm = (WallpaperManager) getSystemService(Context.WALLPAPER_SERVICE);
+		try {
+			wm.setResource(R.drawable.default_wallpaper);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
     
     //mcoy add for self-defined menu beign

@@ -97,8 +97,8 @@ final class Utilities {
                 initStatics(context);
             }
 
-            int width = sIconWidth;
-            int height = sIconHeight;
+            int width = sIconWidth - 20;
+            int height = sIconHeight - 20;
 
             if (icon instanceof PaintDrawable) {
                 PaintDrawable painter = (PaintDrawable) icon;
@@ -153,6 +153,9 @@ final class Utilities {
                 debugPaint.setColor(0xffcccc00);
                 canvas.drawRect(left, top, left+width, top+height, debugPaint);
             }
+            
+            sTextureBg.setBounds(0, 0, textureWidth, textureHeight);
+            sTextureBg.draw(canvas);
 
             sOldBounds.set(icon.getBounds());
             icon.setBounds(left, top, left+width, top+height);
@@ -248,7 +251,11 @@ final class Utilities {
         cm.setSaturation(0.2f);
         sDisabledPaint.setColorFilter(new ColorMatrixColorFilter(cm));
         sDisabledPaint.setAlpha(0x88);
+        
+        sTextureBg = context.getResources().getDrawable(R.drawable.icon_menu_bg);
     }
+    
+    private static Drawable sTextureBg = null;
 
     /** Only works for positive numbers. */
     static int roundToPow2(int n) {
