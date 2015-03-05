@@ -97,8 +97,8 @@ final class Utilities {
                 initStatics(context);
             }
 
-            int width = sIconWidth - 20;
-            int height = sIconHeight - 20;
+            int width = sIconWidth - 10;
+            int height = sIconHeight - 10;
 
             if (icon instanceof PaintDrawable) {
                 PaintDrawable painter = (PaintDrawable) icon;
